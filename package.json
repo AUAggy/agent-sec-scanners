@@ -8,8 +8,8 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "npm run build --workspaces",
-    "test": "npm run test --workspaces"
+    "build": "npm run build -w @miaggy/core && npm run build -w bedrock-security-mcp",
+    "test": "npm run build -w @miaggy/core && npm run test --workspaces"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

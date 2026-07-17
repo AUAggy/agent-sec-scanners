@@ -1,6 +1,6 @@
 {
   "name": "@miaggy/core",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Shared audit engine: findings, rules, scoring, compliance mappings, and report renderers for the scanner family",
   "type": "module",
   "main": "dist/index.js",
