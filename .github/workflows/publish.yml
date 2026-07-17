@@ -1,0 +1,36 @@
+name: Publish to npm
+
+# Tokenless (OIDC Trusted Publishing). The release tag selects the workspace:
+#   core-vX.Y.Z    -> @miaggy/core
+#   bedrock-vX.Y.Z -> bedrock-security-mcp
+# Trusted-publisher config on npmjs.com must name this repo and this workflow
+# filename exactly for BOTH packages.
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      - name: Resolve workspace from release tag
+        id: pkg
+        run: |
+          case "${GITHUB_REF_NAME}" in
+            core-v*)    echo "workspace=@miaggy/core" >> "$GITHUB_OUTPUT" ;;
+            bedrock-v*) echo "workspace=bedrock-security-mcp" >> "$GITHUB_OUTPUT" ;;
+            *) echo "Unrecognized release tag '${GITHUB_REF_NAME}' (expected core-v* or bedrock-v*)" >&2; exit 1 ;;
+          esac
+      - run: npm ci
+      - run: npm audit --audit-level=high
+      - run: npm run build
+      - run: npm publish --provenance --access public -w ${{ steps.pkg.outputs.workspace }}
