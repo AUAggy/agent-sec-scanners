@@ -1,0 +1,24 @@
+{
+  "name": "@miaggy/core",
+  "version": "0.0.0",
+  "description": "Shared audit engine: findings, rules, scoring, compliance mappings, and report renderers for the scanner family",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "name": "agent-sec-scanners",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Monorepo for the @miaggy scanner family: shared audit engine and provider packs",
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "test": "npm run test --workspaces"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.8.0",
+    "vitest": "^4.1.9"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
