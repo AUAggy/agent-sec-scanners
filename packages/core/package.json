@@ -17,6 +17,9 @@
     "build": "tsc",
     "test": "vitest run"
   },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1"
+  },
   "license": "MIT",
   "engines": {
     "node": ">=20.0.0"
