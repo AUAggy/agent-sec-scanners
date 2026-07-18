@@ -20,9 +20,7 @@ Security scanners for AI workloads, built on one shared audit engine. Every scan
 
 Packs own all I/O. A pack implements collectors that build a snapshot, and registers rules that are pure functions over it. The engine never touches the network or filesystem on a pack's behalf, which is why every pack's rule tests run without mocks.
 
-## The compatibility promise
-
-`bedrock-security-mcp` shipped standalone as 0.1.x and was rebuilt on the engine for 0.2.0 with byte-identical output. That claim is enforced, not asserted: golden-file snapshots of rule output, both report formats, and the JSON serialization were committed before any code moved, and the pack's test suite fails on a one-byte deviation. See [`packages/bedrock/tests/goldens/`](packages/bedrock/tests/goldens/).
+Report output is pinned by golden-file tests: byte-exact snapshots of rule evaluation, both report formats, and the JSON serialization, committed in [`packages/bedrock/tests/goldens/`](packages/bedrock/tests/goldens/). A change that alters one byte of output fails the suite, so a scanner's reports cannot drift under refactoring.
 
 ## Verifiable claims
 
