@@ -9,7 +9,7 @@ import { readFileSync, existsSync } from "node:fs";
 import { homedir, platform } from "node:os";
 import { join } from "node:path";
 import type { ConfigSource, McpClient, McpConfigSnapshot, McpServerEntry } from "../types.js";
-import { parseConfigContent } from "./parse.js";
+import { parseConfigContent, parseGooseConfig } from "./parse.js";
 
 interface CandidatePath {
   path: string;
@@ -28,6 +28,11 @@ export function candidatePaths(projectDir: string, home = homedir(), os = platfo
     os === "win32" ? join(process.env.APPDATA ?? join(home, "AppData", "Roaming"), "Code", "User", "settings.json") :
     join(home, ".config", "Code", "User", "settings.json");
 
+  // Goose (Block): YAML config. On Windows it lives under %APPDATA%\Block\goose\config.
+  const gooseConfig =
+    os === "win32" ? join(process.env.APPDATA ?? join(home, "AppData", "Roaming"), "Block", "goose", "config", "config.yaml") :
+    join(home, ".config", "goose", "config.yaml");
+
   return [
     { path: claudeDesktop, client: "claude-desktop" },
     { path: join(projectDir, ".mcp.json"), client: "claude-code" },
@@ -38,6 +43,7 @@ export function candidatePaths(projectDir: string, home = homedir(), os = platfo
     { path: join(home, ".cursor", "mcp.json"), client: "cursor" },
     { path: join(projectDir, ".vscode", "mcp.json"), client: "vscode" },
     { path: vscodeUserSettings, client: "vscode" },
+    { path: gooseConfig, client: "goose" },
   ];
 }
 
@@ -47,7 +53,9 @@ export function collectSource(candidate: CandidatePath): { source: ConfigSource;
   if (!existsSync(candidate.path)) return null;
   try {
     const content = readFileSync(candidate.path, "utf-8");
-    const servers = parseConfigContent(content, candidate.path, candidate.client);
+    const servers = candidate.client === "goose"
+      ? parseGooseConfig(content, candidate.path)
+      : parseConfigContent(content, candidate.path, candidate.client);
     return {
       source: { path: candidate.path, client: candidate.client, status: "parsed", serverCount: servers.length },
       servers,

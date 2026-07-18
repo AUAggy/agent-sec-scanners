@@ -1,0 +1,39 @@
+GOOSE_MODEL: gpt-4o
+GOOSE_PROVIDER: openai
+extensions:
+  developer:
+    enabled: true
+    type: builtin
+    name: developer
+    display_name: Developer
+    timeout: 300
+    bundled: true
+    available_tools: []
+  memory:
+    enabled: true
+    type: builtin
+    name: memory
+    timeout: 300
+    bundled: true
+    available_tools: []
+  context7:
+    enabled: true
+    type: stdio
+    name: context7
+    cmd: npx
+    args:
+    - -y
+    - '@upstash/context7-mcp'
+    envs: {}
+    env_keys: []
+    timeout: 300
+    description: Use up-to-date code and docs
+    bundled: null
+    available_tools: []
+  local-notes:
+    enabled: true
+    type: stdio
+    name: local-notes
+    cmd: /opt/tools/notes-server
+    args: []
+    envs: {}

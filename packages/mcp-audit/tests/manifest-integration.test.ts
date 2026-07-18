@@ -19,6 +19,7 @@ function fixtureServer(name: string, script: string): McpServerEntry {
     command: process.execPath,
     args: [join(fixtureDir, script)],
     env: {},
+    launchShape: "node",
   };
 }
 
@@ -52,6 +53,7 @@ describe("manifest handshake against the fixture servers", () => {
       command: process.execPath,
       args: ["-e", "setInterval(() => {}, 1000)"],
       env: {},
+      launchShape: "node",
     };
     await expect(fetchManifest(dud, 2000)).rejects.toThrow(/timed out/);
   });

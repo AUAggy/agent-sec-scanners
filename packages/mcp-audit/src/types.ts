@@ -4,7 +4,26 @@
 // types. Collectors produce them; rules are pure functions over them.
 
 /** The MCP clients whose configuration this pack discovers. */
-export type McpClient = "claude-desktop" | "claude-code" | "cursor" | "vscode";
+export type McpClient = "claude-desktop" | "claude-code" | "cursor" | "vscode" | "goose";
+
+/** How a configured server is launched, normalized. This is the dimension the
+ * Wave-1 pipeline was implicitly keying on (it only ever handled npm): making
+ * it explicit lets coverage logic and future registry adapters dispatch on the
+ * shape instead of "is npmPackage set", so no discovered server is silently
+ * dropped. `remote` = a url entry with no local command. */
+export type LaunchShape =
+  | "npm"        // npx, bunx
+  | "pypi"       // uvx, pipx
+  | "container"  // docker, podman
+  | "node"       // node <script>
+  | "python"     // python, python3
+  | "deno"
+  | "go"
+  | "ruby"       // ruby, gem
+  | "jvm"        // java, jbang
+  | "rust"       // cargo
+  | "local-binary"
+  | "remote";
 
 /** An npm package reference parsed from a server's launch command. */
 export interface NpmPackageRef {
@@ -28,6 +47,8 @@ export interface McpServerEntry {
   env: Record<string, string>;
   /** Remote server URL for sse/http-style entries (no local command). */
   url?: string;
+  /** How the server is launched. Always set by the collector. */
+  launchShape: LaunchShape;
   /** Set when the launch command resolves an npm package (npx/bunx). */
   npmPackage?: NpmPackageRef;
 }

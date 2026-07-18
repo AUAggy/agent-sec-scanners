@@ -27,6 +27,7 @@ const SNAPSHOT: McpConfigSnapshot = {
       command: "npx",
       args: ["-y", "notes-mcp@1.0.2"],
       env: { NOTES_API_KEY: "secret-value" },
+      launchShape: "npm",
       npmPackage: { spec: "notes-mcp@1.0.2", name: "notes-mcp", versionSpec: "1.0.2" },
     },
   ],
@@ -103,7 +104,7 @@ describe("diffBaseline", () => {
       sources: [],
       servers: [
         ...SNAPSHOT.servers,
-        { name: "extra", source: "/tmp/c.json", client: "claude-desktop", command: "npx", args: ["-y", "extra-mcp@1.0.0"], env: {}, npmPackage: { spec: "extra-mcp@1.0.0", name: "extra-mcp", versionSpec: "1.0.0" } },
+        { name: "extra", source: "/tmp/c.json", client: "claude-desktop", command: "npx", args: ["-y", "extra-mcp@1.0.0"], env: {}, launchShape: "npm", npmPackage: { spec: "extra-mcp@1.0.0", name: "extra-mcp", versionSpec: "1.0.0" } },
       ],
     };
     const after = createBaseline(grown, [manifest("notes", TOOLS)]);
