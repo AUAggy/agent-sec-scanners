@@ -48,6 +48,32 @@ export interface McpConfigSnapshot {
   sources: ConfigSource[];
 }
 
+/** One tool from a server's live manifest. `description` is raw, untrusted
+ * text kept for signature scanning; it is never emitted into findings except
+ * through sanitized, length-capped excerpts. */
+export interface ManifestTool {
+  name: string;
+  description: string;
+  descriptionLength: number;
+  annotations?: {
+    readOnlyHint?: boolean;
+    destructiveHint?: boolean;
+    idempotentHint?: boolean;
+    openWorldHint?: boolean;
+    [key: string]: unknown;
+  };
+}
+
+/** A server's tool manifest, collected via the initialize/tools-list handshake. */
+export interface ToolManifest {
+  serverName: string;
+  client: McpClient;
+  source: string;
+  serverInfoName?: string;
+  serverVersion?: string;
+  tools: ManifestTool[];
+}
+
 /** npm registry facts about a server's package, fetched once per package. */
 export interface RegistryInfo {
   name: string;

@@ -9,15 +9,20 @@ const EMITTED_RULE_IDS = [
   "server-no-provenance",
   "server-install-scripts",
   "server-low-maintenance-signal",
+  "tool-description-injection-pattern",
+  "tool-shadowing-collision",
+  "destructive-tool-unannotated",
+  "oversized-tool-description",
   "config-source-unreadable",
   "registry-lookup-skipped",
+  "manifest-scan-failed",
 ];
 
 describe("allRuleMetadata", () => {
-  it("returns exactly 7 catalog entries with no duplicates", () => {
+  it("returns exactly 12 catalog entries with no duplicates", () => {
     const ids = allRuleMetadata().map(r => r.ruleId);
-    expect(ids).toHaveLength(7);
-    expect(new Set(ids).size).toBe(7);
+    expect(ids).toHaveLength(12);
+    expect(new Set(ids).size).toBe(12);
   });
 
   it("has non-empty threat and rationale on every entry", () => {

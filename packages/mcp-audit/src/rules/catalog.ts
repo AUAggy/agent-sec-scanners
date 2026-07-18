@@ -7,6 +7,7 @@ import { createRuleCatalog, NIST_AI_RMF } from "@miaggy/core";
 import { ruleRegistry, type RuleCatalogEntry } from "./registry.js";
 // Register rules wherever the catalog is consumed.
 import "./config-rules.js";
+import "./manifest-rules.js";
 
 const TOOL_FINDING_METADATA: RuleCatalogEntry[] = [
   {
@@ -17,6 +18,16 @@ const TOOL_FINDING_METADATA: RuleCatalogEntry[] = [
     rationale: "The honest output for a broken discovery path is a skip finding, never a silent empty. Same pattern as the bedrock pack's detection tool.",
     severity: "low",
     appliesTo: "config_source",
+    complianceFrameworks: [NIST_AI_RMF],
+  },
+  {
+    ruleId: "manifest-scan-failed",
+    title: "Tool manifest not scanned",
+    description: "A configured server's manifest could not be collected (handshake failed, or the entry is remote); its tools were not audited.",
+    threat: "An unscanned server silently escapes the manifest rules; a clean scan would overstate coverage.",
+    rationale: "Every server the scan cannot reach is named in the report, so absence of findings is never mistaken for absence of risk.",
+    severity: "low",
+    appliesTo: "mcp_server",
     complianceFrameworks: [NIST_AI_RMF],
   },
   {

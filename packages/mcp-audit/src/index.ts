@@ -3,13 +3,14 @@
 
 import { createMcpServer } from "@miaggy/core";
 import { auditMcpConfig } from "./tools/audit-mcp-config.js";
+import { scanMcpManifests } from "./tools/scan-manifests.js";
 import { generateMcpAuditReport } from "./tools/generate-report.js";
 import { runCli } from "./cli.js";
 
-// ── Tool registry (2 of the 3-tool cap; scan-manifests arrives in Wave 2) ──
+// ── Tool registry (3 tools; the cap) ──────────────────────────
 const mcp = createMcpServer({
   name: "mcp-audit",
-  version: "0.1.0",
+  version: "0.2.0",
   startupLine: "[mcp-audit] MCP server running",
   tools: [
     {
@@ -30,6 +31,27 @@ const mcp = createMcpServer({
       },
     },
     {
+      name: "scan_mcp_manifests",
+      description: "Live-scan the tool manifests of the MCP servers configured on this machine. Starts each configured stdio server with a handshake-only MCP client (initialize + tools/list; no tool is ever called, and each server is shut down after the handshake; servers receive their configured env, which they need to start). Rules: prompt-injection signatures in tool descriptions, tool-name collisions across servers, destructive-sounding tools without safety annotations, and anomalously long descriptions. Servers that cannot be scanned are reported as skip findings.",
+      inputSchema: {
+        type: "object" as const,
+        properties: {
+          projectDir: {
+            type: "string",
+            description: "Optional: project directory for project-level configs (default: current directory)",
+          },
+          timeoutMs: {
+            type: "number",
+            description: "Optional: per-server handshake timeout in milliseconds (default: 15000)",
+          },
+        },
+      },
+      handler: async (args) => {
+        const { findings } = await scanMcpManifests(args);
+        return JSON.stringify(findings, null, 2);
+      },
+    },
+    {
       name: "generate_mcp_audit_report",
       description: "Run the full MCP configuration audit and produce a markdown posture report with a remediation roadmap and compliance mapping.",
       inputSchema: {
@@ -38,6 +60,10 @@ const mcp = createMcpServer({
           title: {
             type: "string",
             description: "Optional report title",
+          },
+          includeManifests: {
+            type: "boolean",
+            description: "Optional: also run the live manifest scan (starts configured stdio servers for a handshake; default false)",
           },
         },
       },

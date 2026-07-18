@@ -68,6 +68,57 @@
       "rationale": "Maintenance signals are weak evidence individually, so this is cataloged low: it informs review without failing a CI gate."
     },
     {
+      "ruleId": "tool-description-injection-pattern",
+      "title": "Tool description matches a prompt-injection signature",
+      "severity": "critical",
+      "appliesTo": "manifest_tool",
+      "complianceFrameworks": [
+        "OWASP_LLM_TOP10:LLM01",
+        "OWASP_AGENTIC:ASI01",
+        "MITRE_ATLAS"
+      ],
+      "threat": "Tool descriptions are injected into the model's context by every MCP client. A poisoned description instructs the model directly: exfiltrate data, call other tools, ignore its instructions. The user never sees it.",
+      "rationale": "The same signature families this engine runs against invocation logs apply to tool descriptions, which are the highest-leverage injection surface in an agent's tool chain."
+    },
+    {
+      "ruleId": "tool-shadowing-collision",
+      "title": "Same tool name exposed by multiple servers",
+      "severity": "high",
+      "appliesTo": "manifest_set",
+      "complianceFrameworks": [
+        "OWASP_AGENTIC:ASI02",
+        "OWASP_AGENTIC:ASI04",
+        "NIST_AI_RMF"
+      ],
+      "threat": "When names collide, the client or model may route a call to the wrong server. A malicious server that shadows a trusted tool name (e.g. read_file) receives the arguments meant for the real one.",
+      "rationale": "Name routing is the only addressing MCP tools have; collisions are ambiguity an attacker can occupy. Cross-server visibility is exactly what a config-level auditor can check and a single server cannot."
+    },
+    {
+      "ruleId": "destructive-tool-unannotated",
+      "title": "Destructive-sounding tool without safety annotations",
+      "severity": "medium",
+      "appliesTo": "manifest_tool",
+      "complianceFrameworks": [
+        "OWASP_AGENTIC:ASI02",
+        "OWASP_LLM_TOP10:LLM06",
+        "NIST_AI_RMF"
+      ],
+      "threat": "Clients use annotations to decide when to ask the human. An unannotated destructive tool gets called with the same ceremony as a read-only one.",
+      "rationale": "Annotations are the only machine-readable safety contract MCP tools carry. Their absence on a destructive capability removes the client's chance to interpose a confirmation."
+    },
+    {
+      "ruleId": "oversized-tool-description",
+      "title": "Tool description is anomalously long",
+      "severity": "low",
+      "appliesTo": "manifest_tool",
+      "complianceFrameworks": [
+        "OWASP_LLM_TOP10:LLM01",
+        "NIST_AI_RMF"
+      ],
+      "threat": "Very long descriptions are where smuggled instructions hide: the visible opening reads normally while later paragraphs steer the model.",
+      "rationale": "Length is a weak signal on its own, so this is cataloged low: it directs human review to the descriptions worth reading in full."
+    },
+    {
       "ruleId": "config-source-unreadable",
       "title": "MCP config file could not be read",
       "severity": "low",
@@ -77,6 +128,17 @@
       ],
       "threat": "An unparseable config silently hides servers from the audit; the user believes coverage is complete when part of it is dark.",
       "rationale": "The honest output for a broken discovery path is a skip finding, never a silent empty. Same pattern as the bedrock pack's detection tool."
+    },
+    {
+      "ruleId": "manifest-scan-failed",
+      "title": "Tool manifest not scanned",
+      "severity": "low",
+      "appliesTo": "mcp_server",
+      "complianceFrameworks": [
+        "NIST_AI_RMF"
+      ],
+      "threat": "An unscanned server silently escapes the manifest rules; a clean scan would overstate coverage.",
+      "rationale": "Every server the scan cannot reach is named in the report, so absence of findings is never mistaken for absence of risk."
     },
     {
       "ruleId": "registry-lookup-skipped",

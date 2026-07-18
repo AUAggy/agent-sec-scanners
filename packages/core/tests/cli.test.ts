@@ -90,6 +90,23 @@ describe("createCli", () => {
     expect(runSpy).toHaveBeenCalledWith({ region: "us-east-1" });
   });
 
+  it("supports presence-only boolean flags that consume no value", async () => {
+    const runSpy = vi.fn().mockResolvedValue(CLEAN);
+    const cli = createCli({
+      helpText: HELP,
+      outDirEnvVar: "TEST_PACK_OUTPUT_DIR",
+      defaultOutDir: ".",
+      flags: [
+        { flag: "--deep", key: "deep", boolean: true },
+        { flag: "--region", key: "region" },
+      ],
+      defaults: {},
+      run: runSpy,
+    });
+    await cli(["--deep", "--region", "us-west-2"]);
+    expect(runSpy).toHaveBeenCalledWith({ deep: true, region: "us-west-2" });
+  });
+
   it("sets the out-dir env var before running", async () => {
     const runSpy = vi.fn(async () => {
       expect(process.env.TEST_PACK_OUTPUT_DIR).toBe("/tmp/out");

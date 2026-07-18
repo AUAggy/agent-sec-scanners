@@ -8,11 +8,16 @@ import { writeFileSync, mkdirSync } from "node:fs";
 import { hostname } from "node:os";
 import { buildMarkdownReport, generateHtmlReport, type Finding } from "@miaggy/core";
 import { auditMcpConfig } from "./audit-mcp-config.js";
+import { scanMcpManifests } from "./scan-manifests.js";
 import { MARKDOWN_CONTEXT, HTML_CONTEXT } from "../report/context.js";
 
 export interface GenerateReportInput {
   projectDir?: string;
   title?: string;
+  /** Also run the live manifest scan (starts each configured stdio server
+   * for a handshake). Explicitly opt-in; the static audit never executes
+   * a discovered server. */
+  includeManifests?: boolean;
 }
 
 export interface McpAuditReportResult {
@@ -23,6 +28,10 @@ export interface McpAuditReportResult {
 
 export async function generateMcpAuditReport(input: GenerateReportInput): Promise<McpAuditReportResult> {
   const findings = await auditMcpConfig({ projectDir: input.projectDir });
+  if (input.includeManifests) {
+    const scan = await scanMcpManifests({ projectDir: input.projectDir });
+    findings.push(...scan.findings);
+  }
 
   const opts = { region: "local", accountId: hostname(), title: input.title };
   const markdown = buildMarkdownReport(findings, opts, MARKDOWN_CONTEXT);
