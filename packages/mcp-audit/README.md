@@ -1,8 +1,10 @@
 # @miaggy/mcp-audit
 
-Audits the MCP servers a machine is configured to run, for supply-chain risk. It reads the config files of Claude Desktop, Claude Code, Cursor, and VS Code, checks each configured npm package against the public registry, and reports findings with threat rationale, a posture score, and a remediation roadmap. It never executes a server it finds.
+Audits the MCP servers a machine is configured to run, for supply-chain risk and tool-manifest poisoning. It reads the config files of Claude Desktop, Claude Code, Cursor, and VS Code, checks each configured npm package against the public registry, and reports findings with threat rationale, a posture score, and a remediation roadmap.
 
-## Checks (Wave 1)
+Two modes with an explicit line between them: the **static audit never executes a discovered server**. The **manifest scan** (`--manifests`, or the `scan_mcp_manifests` tool) is the opt-in that does: it starts each configured stdio server with a handshake-only MCP client — initialize and tools/list, never a tool call — then shuts it down. Scanned servers receive their configured env, which they need to start; you already run them with exactly that env.
+
+## Static checks
 
 | Rule | Severity | What it catches |
 |---|---|---|
@@ -12,7 +14,16 @@ Audits the MCP servers a machine is configured to run, for supply-chain risk. It
 | `server-install-scripts` | medium | Package declares preinstall/install/postinstall hooks |
 | `server-low-maintenance-signal` | low | Single maintainer and no publish in over 540 days |
 
-Unreadable config files and failed registry lookups become skip findings, never a silent empty: the report always states what was not checked.
+## Manifest checks (opt-in scan)
+
+| Rule | Severity | What it catches |
+|---|---|---|
+| `tool-description-injection-pattern` | critical | A tool description that matches a prompt-injection signature family — instructions addressed to the model, not documentation |
+| `tool-shadowing-collision` | high | The same tool name exposed by two servers; calls routed by name alone can land on the wrong one |
+| `destructive-tool-unannotated` | medium | Delete/send/pay/execute-sounding tools with neither `readOnlyHint` nor `destructiveHint` |
+| `oversized-tool-description` | low | Multi-thousand-character descriptions, where smuggled instructions hide |
+
+Unreadable config files, failed registry lookups, and unscannable servers become skip findings, never a silent empty: the report always states what was not checked.
 
 ## Usage
 
