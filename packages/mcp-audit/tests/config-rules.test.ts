@@ -48,8 +48,21 @@ describe("unpinned-server-version", () => {
     expect(f!.complianceFrameworks).toContain("OWASP_AGENTIC:ASI04");
   });
 
-  it("is suppressed on a pinned package", () => {
+  it("is suppressed on an exact version pin, including prerelease", () => {
     expect(rule("unpinned-server-version").check({ server: server({}) })).toBeNull();
+    expect(rule("unpinned-server-version").check({
+      server: server({ npmPackage: { spec: "test-mcp@2.0.0-rc.1", name: "test-mcp", versionSpec: "2.0.0-rc.1" } }),
+    })).toBeNull();
+  });
+
+  it("fires on floating specs: dist-tags and ranges", () => {
+    for (const versionSpec of ["latest", "^1.0.0", "~1.2.0", "1.x"]) {
+      const f = rule("unpinned-server-version").check({
+        server: server({ npmPackage: { spec: `test-mcp@${versionSpec}`, name: "test-mcp", versionSpec } }),
+      });
+      expect(f, versionSpec).not.toBeNull();
+      expect(f!.details).toContain("floating");
+    }
   });
 
   it("is suppressed on non-npm launch commands", () => {
