@@ -4,11 +4,16 @@
 // bedrock pack: { markdown, htmlPath, findings }; CLI consumes findings for
 // --json and the exit gate, the MCP handler consumes markdown.
 
-import { writeFileSync, mkdirSync } from "node:fs";
+import { writeFileSync, mkdirSync, readFileSync } from "node:fs";
 import { hostname } from "node:os";
-import { buildMarkdownReport, generateHtmlReport, type Finding } from "@miaggy/core";
+import { buildMarkdownReport, generateHtmlReport, NIST_AI_RMF, type Finding } from "@miaggy/core";
 import { auditMcpConfig } from "./audit-mcp-config.js";
 import { scanMcpManifests } from "./scan-manifests.js";
+import { ruleRegistry } from "../rules/registry.js";
+import "../rules/drift-rules.js";
+import { parseBaseline, createBaseline, diffBaseline } from "../baseline.js";
+import { discoverMcpConfig } from "../collectors/discover.js";
+import { sanitizeConfigString } from "../collectors/parse.js";
 import { MARKDOWN_CONTEXT, HTML_CONTEXT } from "../report/context.js";
 
 export interface GenerateReportInput {
@@ -18,6 +23,9 @@ export interface GenerateReportInput {
    * for a handshake). Explicitly opt-in; the static audit never executes
    * a discovered server. */
   includeManifests?: boolean;
+  /** Diff against a baseline file from `mcp-audit snapshot`. Implies the
+   * manifest scan (drift needs current manifests to compare). */
+  baselinePath?: string;
 }
 
 export interface McpAuditReportResult {
@@ -28,9 +36,36 @@ export interface McpAuditReportResult {
 
 export async function generateMcpAuditReport(input: GenerateReportInput): Promise<McpAuditReportResult> {
   const findings = await auditMcpConfig({ projectDir: input.projectDir });
-  if (input.includeManifests) {
+  if (input.includeManifests || input.baselinePath) {
     const scan = await scanMcpManifests({ projectDir: input.projectDir });
     findings.push(...scan.findings);
+
+    if (input.baselinePath) {
+      try {
+        const stored = parseBaseline(readFileSync(input.baselinePath, "utf-8"));
+        const current = createBaseline(discoverMcpConfig(input.projectDir ?? process.cwd()), scan.manifests);
+        const drifts = diffBaseline(stored, current);
+        findings.push(...ruleRegistry.evaluate(
+          drifts.map(drift => ({
+            scope: "baseline_diff",
+            data: { drift, baselineCreatedAt: stored.createdAt },
+          }))
+        ));
+      } catch (err) {
+        findings.push({
+          findingId: "mcp-baseline-unreadable",
+          ruleId: "baseline-unreadable",
+          title: `Baseline file could not be read: ${input.baselinePath}`,
+          severity: "low",
+          status: "NOT_APPLICABLE",
+          resource: input.baselinePath,
+          region: "local",
+          details: `Drift detection did not run (${sanitizeConfigString((err as Error).message)}).`,
+          remediation: "Re-create the baseline with 'mcp-audit snapshot' and pass its path to --baseline.",
+          complianceFrameworks: [NIST_AI_RMF],
+        });
+      }
+    }
   }
 
   const opts = { region: "local", accountId: hostname(), title: input.title };

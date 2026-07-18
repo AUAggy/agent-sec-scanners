@@ -12,6 +12,8 @@ Options:
   --manifests         Also scan live tool manifests: starts each configured stdio
                       server for an initialize/tools-list handshake (no tool is
                       ever called), then shuts it down
+  --baseline <file>   Diff against a baseline from 'mcp-audit snapshot' and flag
+                      drift (implies the manifest scan)
   --out-dir <path>    Directory to write the HTML report (default: current dir)
   --title <title>     Report title
   --json              Emit findings as JSON instead of markdown to stdout
@@ -34,13 +36,15 @@ export const runCli = createCli({
   flags: [
     { flag: "--project", key: "projectDir" },
     { flag: "--manifests", key: "includeManifests", boolean: true },
+    { flag: "--baseline", key: "baselinePath" },
   ],
   defaults: {},
   run: async (args) => {
-    const input: { projectDir?: string; title?: string; includeManifests?: boolean } = {};
+    const input: { projectDir?: string; title?: string; includeManifests?: boolean; baselinePath?: string } = {};
     if (args.projectDir) input.projectDir = args.projectDir as string;
     if (args.title) input.title = args.title as string;
     if (args.includeManifests) input.includeManifests = true;
+    if (args.baselinePath) input.baselinePath = args.baselinePath as string;
     return generateMcpAuditReport(input);
   },
 });
