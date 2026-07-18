@@ -49,6 +49,16 @@ describe("unpinned-server-version", () => {
     expect(f!.complianceFrameworks).toContain("OWASP_AGENTIC:ASI04");
   });
 
+  it("gives same-named servers in different sources distinct findingIds (no collision)", () => {
+    const a = rule("unpinned-server-version").check({
+      server: server({ name: "aws-docs", source: "/home/x/.claude.json (project: /p/A)", args: ["-y", "d"], npmPackage: { spec: "d", name: "d" } }),
+    });
+    const b = rule("unpinned-server-version").check({
+      server: server({ name: "aws-docs", source: "/home/x/.claude.json (project: /p/B)", args: ["-y", "d"], npmPackage: { spec: "d", name: "d" } }),
+    });
+    expect(a!.findingId).not.toBe(b!.findingId);
+  });
+
   it("is suppressed on an exact version pin, including prerelease", () => {
     expect(rule("unpinned-server-version").check({ server: server({}) })).toBeNull();
     expect(rule("unpinned-server-version").check({

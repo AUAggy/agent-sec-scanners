@@ -119,6 +119,30 @@ describe("collectSource", () => {
   });
 });
 
+describe("parseConfigContent: Claude Code project-scoped servers", () => {
+  const content = () => readFileSync(fixturePath("claude-json-with-projects.json"), "utf-8");
+
+  it("discovers top-level AND projects.<path>.mcpServers entries", () => {
+    const servers = parseConfigContent(content(), "/home/x/.claude.json", "claude-code");
+    expect(servers.map(s => s.name).sort()).toEqual(["aws-docs", "aws-docs", "top-level"]);
+  });
+
+  it("encodes the project path into source, so two same-named servers stay distinct", () => {
+    const servers = parseConfigContent(content(), "/home/x/.claude.json", "claude-code");
+    const awsDocs = servers.filter(s => s.name === "aws-docs");
+    expect(awsDocs).toHaveLength(2);
+    const sources = awsDocs.map(s => s.source).sort();
+    expect(sources[0]).toContain("projA");
+    expect(sources[1]).toContain("projB");
+    expect(new Set(sources).size).toBe(2);
+  });
+
+  it("does not read projects for non-Claude-Code clients", () => {
+    const servers = parseConfigContent(content(), "/x/cursor.json", "cursor");
+    expect(servers.map(s => s.name)).toEqual(["top-level"]); // projects ignored
+  });
+});
+
 describe("deriveLaunchShape", () => {
   it("classifies npm runners", () => {
     expect(deriveLaunchShape("npx")).toBe("npm");
