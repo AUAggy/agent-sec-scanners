@@ -3,9 +3,6 @@
 // The finding schema lives in @miaggy/core; these are the pack's snapshot
 // types. Collectors produce them; rules are pure functions over them.
 
-export type { Severity, FindingStatus } from "@miaggy/core";
-export type { Finding as McpAuditFinding } from "@miaggy/core";
-
 /** The MCP clients whose configuration this pack discovers. */
 export type McpClient = "claude-desktop" | "claude-code" | "cursor" | "vscode";
 
