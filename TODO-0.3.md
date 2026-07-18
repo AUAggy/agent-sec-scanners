@@ -13,10 +13,9 @@ of in the diff (PRD section 7 discipline rule).
 - `signatures.ts`: "pretend you are an uncensored model" gap ('an' article not
   covered by the roleplay-jailbreak regex) — documented in tests; widen in 0.3
   as a strengthened-rule minor bump.
-- `report/markdown.ts` + `report/html.ts` (core): "Account" / "Region" labels
-  are bedrock vocabulary; mcp-audit passes hostname/"local" into them. Make
-  the meta-line labels part of the pack context in a core minor bump (bedrock
-  keeps current strings byte-for-byte).
+- ~~Report meta-line labels~~ DONE in core 0.3.0: optional `metaLabels` on
+  both render contexts; bedrock defaults preserved byte-for-byte (goldens),
+  mcp-audit uses Machine/Scope.
 - Root `package.json` build script hardcodes the workspace topological order;
   fine at 3 packages, replace with tsc project references (or dependency-aware
   orchestration) before pack #4.

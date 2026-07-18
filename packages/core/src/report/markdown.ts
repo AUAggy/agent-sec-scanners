@@ -20,6 +20,9 @@ export interface MarkdownReportContext {
   getRuleMetadata: (ruleId: string) => RuleCatalogEntry | undefined;
   /** Lines rendered after the closing "---" separator (attribution, frameworks cited). */
   footerLines: string[];
+  /** Labels for the report meta line. Defaults: "Account" and "Region"
+   * (cloud packs); a local-machine pack passes e.g. "Machine" and "Scope". */
+  metaLabels?: { account?: string; region?: string };
 }
 
 export function buildMarkdownReport(
@@ -52,8 +55,8 @@ export function buildMarkdownReport(
   lines.push(`# ${title}`);
   lines.push("");
   lines.push(`**Generated:** ${new Date().toISOString().replace("T", " ").slice(0, 19)} UTC`);
-  lines.push(`**Account:** ${opts.accountId ?? "unknown"}`);
-  lines.push(`**Region:** ${opts.region}`);
+  lines.push(`**${ctx.metaLabels?.account ?? "Account"}:** ${opts.accountId ?? "unknown"}`);
+  lines.push(`**${ctx.metaLabels?.region ?? "Region"}:** ${opts.region}`);
   lines.push(`**Posture score:** ${postureScore}/100 | **Violations:** ${violationCount} | **Errors:** ${byStatus.ERROR}`);
   lines.push("");
 

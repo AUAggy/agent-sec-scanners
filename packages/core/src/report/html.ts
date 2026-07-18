@@ -50,6 +50,9 @@ export interface HtmlReportContext {
   frameworkLabels: Record<string, string>;
   /** Metadata lookup for threat/rationale rows. */
   getRuleMetadata: (ruleId: string) => RuleCatalogEntry | undefined;
+  /** Labels for the masthead meta line. Defaults: "Account" and "Region"
+   * (cloud packs); a local-machine pack passes e.g. "Machine" and "Scope". */
+  metaLabels?: { account?: string; region?: string };
 }
 
 export function generateHtmlReport(
@@ -688,8 +691,8 @@ export function generateHtmlReport(
   <h1 class="serif">${escapeHtml(title)}</h1>
   <div class="rule-double"></div>
   <div class="report-meta">
-    <span>Account <strong>${escapeHtml(accountId)}</strong></span>
-    <span>Region <strong>${escapeHtml(region)}</strong></span>
+    <span>${escapeHtml(ctx.metaLabels?.account ?? "Account")} <strong>${escapeHtml(accountId)}</strong></span>
+    <span>${escapeHtml(ctx.metaLabels?.region ?? "Region")} <strong>${escapeHtml(region)}</strong></span>
     <span>Generated <strong>${generatedAt}</strong></span>
   </div>
   <p class="scope-line">${escapeHtml(ctx.scopeLine)}</p>
