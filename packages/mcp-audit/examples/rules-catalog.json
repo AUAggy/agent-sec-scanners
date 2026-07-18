@@ -186,6 +186,17 @@
       ],
       "threat": "Missing registry data silently disables three rules; a clean report would overstate what was checked.",
       "rationale": "Surfacing the skipped lookup keeps the report honest about coverage instead of implying the registry-backed checks passed."
+    },
+    {
+      "ruleId": "coverage-skip",
+      "title": "MCP server discovered but not fully assessed",
+      "severity": "low",
+      "appliesTo": "mcp_server",
+      "complianceFrameworks": [
+        "NIST_AI_RMF"
+      ],
+      "threat": "A server the audit cannot assess silently escapes the supply-chain rules; a clean report would overstate coverage for launch shapes the tool does not yet cover.",
+      "rationale": "Every discovered server the rules cannot reach is named in the report with its residual, so an empty findings list is never mistaken for 'looked and found nothing'."
     }
   ]
 }

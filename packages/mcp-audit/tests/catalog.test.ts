@@ -19,13 +19,14 @@ const EMITTED_RULE_IDS = [
   "registry-lookup-skipped",
   "manifest-scan-failed",
   "baseline-unreadable",
+  "coverage-skip",
 ];
 
 describe("allRuleMetadata", () => {
-  it("returns exactly 15 catalog entries with no duplicates", () => {
+  it("returns exactly 16 catalog entries with no duplicates", () => {
     const ids = allRuleMetadata().map(r => r.ruleId);
-    expect(ids).toHaveLength(15);
-    expect(new Set(ids).size).toBe(15);
+    expect(ids).toHaveLength(16);
+    expect(new Set(ids).size).toBe(16);
   });
 
   it("has non-empty threat and rationale on every entry", () => {

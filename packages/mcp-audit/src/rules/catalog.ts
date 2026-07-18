@@ -51,6 +51,16 @@ const TOOL_FINDING_METADATA: RuleCatalogEntry[] = [
     appliesTo: "mcp_server",
     complianceFrameworks: [NIST_AI_RMF],
   },
+  {
+    ruleId: "coverage-skip",
+    title: "MCP server discovered but not fully assessed",
+    description: "A configured server was discovered, but its launch shape (e.g. uvx, docker, a local binary, or a remote url) has no registry adapter, so the supply-chain rules could not run for it.",
+    threat: "A server the audit cannot assess silently escapes the supply-chain rules; a clean report would overstate coverage for launch shapes the tool does not yet cover.",
+    rationale: "Every discovered server the rules cannot reach is named in the report with its residual, so an empty findings list is never mistaken for 'looked and found nothing'.",
+    severity: "low",
+    appliesTo: "mcp_server",
+    complianceFrameworks: [NIST_AI_RMF],
+  },
 ];
 
 const catalog = createRuleCatalog({
