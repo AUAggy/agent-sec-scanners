@@ -25,10 +25,10 @@ export function parseNpmPackageRef(command: string | undefined, args: string[]):
   return { spec, name: spec };
 }
 
-/** Strip // and /* *​/ comments so VS Code-style JSONC parses. Naive but
- * sufficient for settings files; strings containing "//" (URLs) survive
- * because the pattern requires the slashes to start outside a quote pair on
- * common config shapes. Parse failures still degrade to an unreadable
+/** Strip whole-line and block comments so VS Code-style JSONC parses.
+ * Naive but sufficient for settings files; strings containing "//" (URLs)
+ * survive because only lines that start with "//" are removed. Trailing
+ * same-line comments still fail JSON.parse, which degrades to an unreadable
  * source finding, never a crash. */
 export function stripJsonComments(text: string): string {
   return text

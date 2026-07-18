@@ -17,6 +17,13 @@ interface ServerItem {
   registry?: RegistryInfo;
 }
 
+/** A spec only counts as pinned when it names an exact version. Dist-tags
+ * ("latest", "next") and ranges ("^1.0.0", "1.x") float exactly like no pin:
+ * the registry decides what runs. */
+export function isExactVersion(versionSpec: string | undefined): boolean {
+  return versionSpec !== undefined && /^\d+\.\d+\.\d+([-+].*)?$/.test(versionSpec);
+}
+
 /** Days without a publish before a package counts as stale. A heuristic,
  * stated in the finding; tune per environment in a later version. */
 export const STALE_PUBLISH_DAYS = 540;
@@ -55,7 +62,7 @@ function base(server: McpServerEntry): Pick<Finding, "region" | "resource"> {
 ruleRegistry.register({
   ruleId: "unpinned-server-version",
   title: "MCP server runs an unpinned npm package",
-  description: "The server is launched via npx/bunx with no @version pin, so every client start executes whatever the registry serves at that moment.",
+  description: "The server is launched via npx/bunx without an exact @version pin (none, a dist-tag like @latest, or a range), so every client start executes whatever the registry serves at that moment.",
   threat: "A hijacked maintainer account or a malicious patch release becomes arbitrary code execution inside the agent host on the next client start, with no action by the user.",
   rationale: "Pinning turns a silent auto-upgrade channel into an explicit review point. This is the same guidance this project ships for its own install instructions.",
   severity: "high",
@@ -64,15 +71,15 @@ ruleRegistry.register({
   check(item) {
     const { server } = item as unknown as ServerItem;
     const pkg = server.npmPackage;
-    if (!pkg || pkg.versionSpec) return null;
+    if (!pkg || isExactVersion(pkg.versionSpec)) return null;
     return {
       findingId: `mcp-unpinned-${server.client}-${server.name}`,
       ruleId: "unpinned-server-version",
-      title: `Server '${server.name}' runs ${pkg.name} with no version pin`,
+      title: `Server '${server.name}' runs ${pkg.name} without an exact version pin`,
       severity: "high",
       status: "FAIL",
       ...base(server),
-      details: `${server.command} ${server.args.join(" ")} resolves '${pkg.spec}' at launch time. Whatever version the npm registry serves is executed without review.`,
+      details: `${server.command} ${server.args.join(" ")} resolves '${pkg.spec}' at launch time. ${pkg.versionSpec ? `'${pkg.versionSpec}' is a floating spec, so whatever` : "Whatever"} version the npm registry serves is executed without review.`,
       remediation: `Pin the package in the config: change '${pkg.spec}' to '${pkg.name}@<version>' and bump deliberately after reviewing release notes.`,
       complianceFrameworks: [OWASP_AGENTIC.ASI04_SUPPLY_CHAIN, OWASP_AGENTIC.ASI05_UNEXPECTED_CODE_EXEC, MITRE_ATLAS],
     };
