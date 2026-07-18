@@ -1,0 +1,93 @@
+{
+  "$schema": "https://example.com/miaggy-mcp-audit/rules-catalog-v1.json",
+  "generatedBy": "@miaggy/mcp-audit — run `npm run build:catalog` to regenerate from src/rules/catalog.ts",
+  "note": "Single source of truth is src/rules (RuleSpec.threat/rationale + TOOL_FINDING_METADATA). This file is a generated artifact; do not edit by hand.",
+  "rules": [
+    {
+      "ruleId": "unpinned-server-version",
+      "title": "MCP server runs an unpinned npm package",
+      "severity": "high",
+      "appliesTo": "mcp_server",
+      "complianceFrameworks": [
+        "OWASP_AGENTIC:ASI04",
+        "OWASP_AGENTIC:ASI05",
+        "MITRE_ATLAS"
+      ],
+      "threat": "A hijacked maintainer account or a malicious patch release becomes arbitrary code execution inside the agent host on the next client start, with no action by the user.",
+      "rationale": "Pinning turns a silent auto-upgrade channel into an explicit review point. This is the same guidance this project ships for its own install instructions."
+    },
+    {
+      "ruleId": "secrets-in-env-block",
+      "title": "Credential stored inline in MCP config",
+      "severity": "high",
+      "appliesTo": "mcp_server",
+      "complianceFrameworks": [
+        "OWASP_AGENTIC:ASI03",
+        "OWASP_LLM_TOP10:LLM02",
+        "NIST_AI_RMF"
+      ],
+      "threat": "Client config files are world-readable to local processes, sync to backups and dotfile repos, and get pasted into bug reports. A literal credential in one is a theft waiting for an occasion.",
+      "rationale": "Environment indirection (\"${VAR}\") or OS keychains keep the secret out of a file that routinely travels. The finding names the variable, never the value."
+    },
+    {
+      "ruleId": "server-no-provenance",
+      "title": "Server package has no registry provenance",
+      "severity": "medium",
+      "appliesTo": "mcp_server",
+      "complianceFrameworks": [
+        "OWASP_AGENTIC:ASI04",
+        "MITRE_ATLAS",
+        "NIST_AI_RMF"
+      ],
+      "threat": "Without provenance, a tampered or account-takeover release is indistinguishable from a legitimate one at install time; trust rests entirely on whoever controls the npm credentials.",
+      "rationale": "Provenance moves trust from a stealable token to a verifiable build. Once present, 'npm audit signatures' catches substitution mechanically."
+    },
+    {
+      "ruleId": "server-install-scripts",
+      "title": "Server package declares install scripts",
+      "severity": "medium",
+      "appliesTo": "mcp_server",
+      "complianceFrameworks": [
+        "OWASP_AGENTIC:ASI04",
+        "OWASP_AGENTIC:ASI05",
+        "MITRE_ATLAS"
+      ],
+      "threat": "Install hooks run arbitrary code at install time, before the server is ever started: the classic npm supply-chain execution primitive.",
+      "rationale": "MCP servers rarely need native builds. An install hook in a tool-server package deserves a manual look before the package is trusted."
+    },
+    {
+      "ruleId": "server-low-maintenance-signal",
+      "title": "Server package shows low maintenance signals",
+      "severity": "low",
+      "appliesTo": "mcp_server",
+      "complianceFrameworks": [
+        "OWASP_AGENTIC:ASI04",
+        "NIST_AI_RMF"
+      ],
+      "threat": "Single-maintainer, long-stale packages are the easiest takeover targets (expired maintainer emails, unpatched dependencies) and the slowest to ship a fix when one is needed.",
+      "rationale": "Maintenance signals are weak evidence individually, so this is cataloged low: it informs review without failing a CI gate."
+    },
+    {
+      "ruleId": "config-source-unreadable",
+      "title": "MCP config file could not be read",
+      "severity": "low",
+      "appliesTo": "config_source",
+      "complianceFrameworks": [
+        "NIST_AI_RMF"
+      ],
+      "threat": "An unparseable config silently hides servers from the audit; the user believes coverage is complete when part of it is dark.",
+      "rationale": "The honest output for a broken discovery path is a skip finding, never a silent empty. Same pattern as the bedrock pack's detection tool."
+    },
+    {
+      "ruleId": "registry-lookup-skipped",
+      "title": "npm registry lookup skipped",
+      "severity": "low",
+      "appliesTo": "mcp_server",
+      "complianceFrameworks": [
+        "NIST_AI_RMF"
+      ],
+      "threat": "Missing registry data silently disables three rules; a clean report would overstate what was checked.",
+      "rationale": "Surfacing the skipped lookup keeps the report honest about coverage instead of implying the registry-backed checks passed."
+    }
+  ]
+}

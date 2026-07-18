@@ -1,0 +1,54 @@
+{
+  "name": "@miaggy/mcp-audit",
+  "version": "0.1.0",
+  "description": "Audits the MCP servers configured on a machine for supply-chain risk: unpinned versions, inline secrets, missing provenance, install scripts, maintenance signals",
+  "type": "module",
+  "bin": {
+    "mcp-audit": "./dist/index.js"
+  },
+  "main": "dist/index.js",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "build:catalog": "node dist/scripts/generate-catalog.js",
+    "build:sample": "node dist/scripts/generate-sample-report.js",
+    "prepublishOnly": "npm run build && npm audit --audit-level=high"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AUAggy/agent-sec-scanners.git",
+    "directory": "packages/mcp-audit"
+  },
+  "homepage": "https://github.com/AUAggy/agent-sec-scanners/tree/main/packages/mcp-audit#readme",
+  "bugs": {
+    "url": "https://github.com/AUAggy/agent-sec-scanners/issues"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "security",
+    "supply-chain",
+    "ai-security",
+    "audit"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@miaggy/core": "^0.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.8.0",
+    "vitest": "^4.1.9"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

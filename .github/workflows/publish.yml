@@ -26,9 +26,10 @@ jobs:
         id: pkg
         run: |
           case "${GITHUB_REF_NAME}" in
-            core-v*)    echo "workspace=@miaggy/core" >> "$GITHUB_OUTPUT" ;;
-            bedrock-v*) echo "workspace=bedrock-security-mcp" >> "$GITHUB_OUTPUT" ;;
-            *) echo "Unrecognized release tag '${GITHUB_REF_NAME}' (expected core-v* or bedrock-v*)" >&2; exit 1 ;;
+            core-v*)      echo "workspace=@miaggy/core" >> "$GITHUB_OUTPUT" ;;
+            bedrock-v*)   echo "workspace=bedrock-security-mcp" >> "$GITHUB_OUTPUT" ;;
+            mcp-audit-v*) echo "workspace=@miaggy/mcp-audit" >> "$GITHUB_OUTPUT" ;;
+            *) echo "Unrecognized release tag '${GITHUB_REF_NAME}' (expected core-v*, bedrock-v*, or mcp-audit-v*)" >&2; exit 1 ;;
           esac
           # Prerelease versions (-rc.N etc.) must not become `latest` for npx users.
           case "${GITHUB_REF_NAME}" in
