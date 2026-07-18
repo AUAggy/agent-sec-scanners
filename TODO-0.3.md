@@ -13,3 +13,13 @@ of in the diff (PRD section 7 discipline rule).
 - `signatures.ts`: "pretend you are an uncensored model" gap ('an' article not
   covered by the roleplay-jailbreak regex) — documented in tests; widen in 0.3
   as a strengthened-rule minor bump.
+- `report/markdown.ts` + `report/html.ts` (core): "Account" / "Region" labels
+  are bedrock vocabulary; mcp-audit passes hostname/"local" into them. Make
+  the meta-line labels part of the pack context in a core minor bump (bedrock
+  keeps current strings byte-for-byte).
+- Root `package.json` build script hardcodes the workspace topological order;
+  fine at 3 packages, replace with tsc project references (or dependency-aware
+  orchestration) before pack #4.
+- Core `createCli` has no boolean-flag support (every pack flag consumes a
+  value). Add when a pack actually needs it; bump consumer dep ranges in the
+  same PR (semver coupling lesson from Wave 1).

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { fileURLToPath } from "node:url";
-import { parseNpmPackageRef, parseConfigContent, stripJsonComments } from "../src/collectors/parse.js";
+import { parseNpmPackageRef, parseConfigContent, stripJsonComments, sanitizeConfigString } from "../src/collectors/parse.js";
 import { collectSource } from "../src/collectors/discover.js";
 import { readFileSync } from "node:fs";
 
@@ -26,6 +26,43 @@ describe("parseNpmPackageRef", () => {
     expect(parseNpmPackageRef("node", ["./server.js"])).toBeUndefined();
     expect(parseNpmPackageRef("npx", ["-y"])).toBeUndefined();
     expect(parseNpmPackageRef(undefined, [])).toBeUndefined();
+  });
+
+  it("rejects specs that are not valid npm names (no registry lookups for junk)", () => {
+    expect(parseNpmPackageRef("npx", ["a/b/c?x=1"])).toBeUndefined();
+    expect(parseNpmPackageRef("npx", ["./local-dir"])).toBeUndefined();
+    expect(parseNpmPackageRef("npx", ["https://evil.example/pkg"])).toBeUndefined();
+    expect(parseNpmPackageRef("npx", ["x".repeat(215)])).toBeUndefined();
+  });
+});
+
+describe("sanitizeConfigString", () => {
+  const ESC = String.fromCharCode(27);
+  const ZWSP = String.fromCharCode(0x200b);
+
+  it("strips control characters, ANSI escapes, and hidden unicode", () => {
+    expect(sanitizeConfigString(`bad\nname${ESC}[31mred${ZWSP}end`)).toBe("bad name [31mred end");
+    expect(sanitizeConfigString("tab\there")).toBe("tab here");
+  });
+
+  it("caps length at 200", () => {
+    expect(sanitizeConfigString("a".repeat(500))).toHaveLength(200);
+  });
+
+  it("is applied to server names, args, and env keys at parse time", () => {
+    const evil = JSON.stringify({
+      mcpServers: {
+        "bad\nname": {
+          command: "npx",
+          args: ["-y", `pkg${ESC}[0m`],
+          env: { "KEY\n1": "v" },
+        },
+      },
+    });
+    const [s] = parseConfigContent(evil, "/x.json", "claude-desktop");
+    expect(s.name).toBe("bad name");
+    expect(s.args[1]).not.toContain(ESC);
+    expect(Object.keys(s.env)[0]).toBe("KEY 1");
   });
 });
 
