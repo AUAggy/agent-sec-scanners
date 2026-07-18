@@ -23,6 +23,8 @@ export interface CliFlag {
   key: string;
   /** Applied to the raw string value (e.g. Number). Default: identity. */
   parse?: (raw: string) => unknown;
+  /** Presence-only flag: sets key to true and consumes no value. */
+  boolean?: boolean;
 }
 
 export interface CliConfig {
@@ -60,6 +62,10 @@ export function createCli(config: CliConfig): (argv: string[]) => Promise<number
       const a = argv[i];
       const spec = config.flags.find(f => f.flag === a);
       if (spec) {
+        if (spec.boolean) {
+          args[spec.key] = true;
+          continue;
+        }
         const raw = argv[++i];
         if (raw !== undefined) args[spec.key] = spec.parse ? spec.parse(raw) : raw;
         continue;

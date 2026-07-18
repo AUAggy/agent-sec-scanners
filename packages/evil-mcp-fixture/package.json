@@ -1,0 +1,10 @@
+{
+  "name": "evil-mcp-fixture",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Deliberately malicious MCP server fixture for mcp-audit Wave 2 tests. Never published.",
+  "type": "module",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1"
+  }
+}

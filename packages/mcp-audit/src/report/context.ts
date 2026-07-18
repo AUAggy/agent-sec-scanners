@@ -7,7 +7,8 @@ import { getRuleMetadata } from "../rules/catalog.js";
 
 export function categorizeFinding(ruleId: string): string {
   if (ruleId === "secrets-in-env-block") return "Secrets & Identity";
-  if (ruleId === "config-source-unreadable" || ruleId === "registry-lookup-skipped") return "Coverage";
+  if (/^(tool-|destructive-|oversized-)/.test(ruleId)) return "Tool Manifests";
+  if (ruleId === "config-source-unreadable" || ruleId === "registry-lookup-skipped" || ruleId === "manifest-scan-failed") return "Coverage";
   return "Supply Chain";
 }
 
