@@ -4,8 +4,9 @@ Security scanners for AI workloads, built on one shared audit engine. Every scan
 
 | Package | npm | What it is |
 |---|---|---|
-| [`packages/core`](packages/core) | [@miaggy/core](https://www.npmjs.com/package/@miaggy/core) | The engine: finding schema, rule registry, catalog, scoring, report renderers, CLI and MCP scaffolding |
+| [`packages/mcp-audit`](packages/mcp-audit) | [@miaggy/mcp-audit](https://www.npmjs.com/package/@miaggy/mcp-audit) | Audits the MCP servers a machine is configured to run: unpinned versions, inline credentials, missing provenance, poisoned tool descriptions, tool shadowing, drift since a recorded baseline |
 | [`packages/bedrock`](packages/bedrock) | [bedrock-security-mcp](https://www.npmjs.com/package/bedrock-security-mcp) | AWS Bedrock security auditor: IAM, invocation logging, guardrails, prompt-injection signals. MCP server plus CI-grade CLI |
+| [`packages/core`](packages/core) | [@miaggy/core](https://www.npmjs.com/package/@miaggy/core) | The engine: finding schema, rule registry, catalog, scoring, report renderers, CLI and MCP scaffolding |
 
 ## The engine
 
@@ -30,14 +31,15 @@ Releases are published from this repo by GitHub Actions using npm Trusted Publis
 npm install bedrock-security-mcp && npm audit signatures
 ```
 
-The Bedrock pack is read-only against AWS by construction. The grep gate that CI and reviewers use:
+The Bedrock pack is read-only against AWS by construction, and the MCP pack never invokes a discovered tool. The grep gates that CI and reviewers use:
 
 ```bash
 grep -r '\.send(new' packages/bedrock/src/ | grep -iv 'List\|Get\|Lookup\|Describe\|Filter'   # must be empty
+grep -rn 'callTool\|child_process' packages/mcp-audit/src/                                    # must be empty
 ```
 
 ## Layout and releases
 
-npm workspaces. A GitHub release tagged `core-vX.Y.Z` or `bedrock-vX.Y.Z` publishes that workspace; prerelease tags publish under the npm dist-tag `next`, so `latest` only ever moves on a final release.
+npm workspaces. A GitHub release tagged `core-vX.Y.Z`, `bedrock-vX.Y.Z`, or `mcp-audit-vX.Y.Z` publishes that workspace; prerelease tags publish under the npm dist-tag `next`, so `latest` only ever moves on a final release.
 
 MIT.
