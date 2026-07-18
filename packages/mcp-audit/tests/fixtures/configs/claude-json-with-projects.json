@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "top-level": { "command": "uvx", "args": ["some.pkg@latest"] }
+  },
+  "projects": {
+    "/home/x/projA": {
+      "mcpServers": {
+        "aws-docs": { "command": "uvx", "args": ["awslabs.aws-documentation-mcp-server@latest"] }
+      }
+    },
+    "/home/x/projB": {
+      "mcpServers": {
+        "aws-docs": { "command": "uvx", "args": ["awslabs.aws-documentation-mcp-server@latest"] }
+      }
+    },
+    "/home/x/projC": {
+      "note": "a project with no mcpServers is skipped, not an error"
+    }
+  }
+}

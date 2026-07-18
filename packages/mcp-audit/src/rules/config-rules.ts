@@ -59,6 +59,14 @@ function base(server: McpServerEntry): Pick<Finding, "region" | "resource"> {
   return { region: "local", resource: `${server.client}:${server.name} (${server.source})` };
 }
 
+/** Stable, unique findingId per (rule, server instance). The source slug keeps
+ * findings distinct when the same server name is configured in two places
+ * (e.g. a top-level and a project-scoped ~/.claude.json entry), so a report can
+ * never dedupe two real servers into one. */
+const slug = (s: string) => s.replace(/[^A-Za-z0-9]+/g, "-");
+const fid = (rule: string, server: McpServerEntry) =>
+  `mcp-${rule}-${server.client}-${slug(server.name)}-${slug(server.source)}`;
+
 ruleRegistry.register({
   ruleId: "unpinned-server-version",
   title: "MCP server runs an unpinned npm package",
@@ -73,7 +81,7 @@ ruleRegistry.register({
     const pkg = server.npmPackage;
     if (!pkg || isExactVersion(pkg.versionSpec)) return null;
     return {
-      findingId: `mcp-unpinned-${server.client}-${server.name}`,
+      findingId: fid("unpinned", server),
       ruleId: "unpinned-server-version",
       title: `Server '${server.name}' runs ${pkg.name} without an exact version pin`,
       severity: "high",
@@ -104,7 +112,7 @@ ruleRegistry.register({
     }
     if (hits.length === 0) return null;
     return {
-      findingId: `mcp-secrets-${server.client}-${server.name}`,
+      findingId: fid("secrets", server),
       ruleId: "secrets-in-env-block",
       title: `Server '${server.name}' has inline credential(s) in its env block`,
       severity: "high",
@@ -130,7 +138,7 @@ ruleRegistry.register({
     const { server, registry } = item as unknown as ServerItem;
     if (!server.npmPackage || !registry || !registry.exists || registry.hasProvenance !== false) return null;
     return {
-      findingId: `mcp-no-provenance-${server.client}-${server.name}`,
+      findingId: fid("no-provenance", server),
       ruleId: "server-no-provenance",
       title: `Package ${registry.name} publishes without provenance`,
       severity: "medium",
@@ -156,7 +164,7 @@ ruleRegistry.register({
     const { server, registry } = item as unknown as ServerItem;
     if (!server.npmPackage || !registry || !registry.exists || !registry.hasInstallScript) return null;
     return {
-      findingId: `mcp-install-scripts-${server.client}-${server.name}`,
+      findingId: fid("install-scripts", server),
       ruleId: "server-install-scripts",
       title: `Package ${registry.name} runs install scripts`,
       severity: "medium",
@@ -185,7 +193,7 @@ ruleRegistry.register({
     const daysSince = (Date.now() - Date.parse(registry.lastPublishDate)) / 86_400_000;
     if (registry.maintainerCount > 1 || daysSince < STALE_PUBLISH_DAYS) return null;
     return {
-      findingId: `mcp-low-maintenance-${server.client}-${server.name}`,
+      findingId: fid("low-maintenance", server),
       ruleId: "server-low-maintenance-signal",
       title: `Package ${registry.name} is single-maintainer and stale`,
       severity: "low",

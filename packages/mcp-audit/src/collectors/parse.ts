@@ -117,10 +117,30 @@ function toEntry(name: string, raw: RawServer, source: string, client: McpClient
  * source finding. */
 export function parseConfigContent(content: string, path: string, client: McpClient): McpServerEntry[] {
   const parsed = JSON.parse(client === "vscode" ? stripJsonComments(content) : content);
+  const entries: McpServerEntry[] = [];
+
   const table: Record<string, RawServer> | undefined =
     parsed?.mcpServers ?? parsed?.mcp?.servers ?? parsed?.servers;
-  if (!table || typeof table !== "object") return [];
-  return Object.entries(table).map(([name, raw]) => toEntry(name, raw ?? {}, path, client));
+  if (table && typeof table === "object") {
+    for (const [name, raw] of Object.entries(table)) entries.push(toEntry(name, raw ?? {}, path, client));
+  }
+
+  // Claude Code stores project-scoped servers under `projects.<path>.mcpServers`
+  // in ~/.claude.json. They are separate configured instances; the project path
+  // goes into `source` so findings are attributable and per-server identity
+  // stays distinct even when two projects reuse a server name.
+  if (client === "claude-code" && parsed?.projects && typeof parsed.projects === "object") {
+    for (const [projectPath, cfg] of Object.entries(parsed.projects as Record<string, unknown>)) {
+      const ptable = (cfg as { mcpServers?: Record<string, RawServer> })?.mcpServers;
+      if (!ptable || typeof ptable !== "object") continue;
+      const projectSource = `${path} (project: ${sanitizeConfigString(projectPath)})`;
+      for (const [name, raw] of Object.entries(ptable)) {
+        entries.push(toEntry(name, raw ?? {}, projectSource, client));
+      }
+    }
+  }
+
+  return entries;
 }
 
 /** Strip matching single/double quotes from a scalar. */
