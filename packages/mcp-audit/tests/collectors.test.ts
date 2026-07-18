@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { fileURLToPath } from "node:url";
-import { parseNpmPackageRef, parseConfigContent, stripJsonComments, sanitizeConfigString } from "../src/collectors/parse.js";
+import { parseNpmPackageRef, parseConfigContent, stripJsonComments, sanitizeConfigString, deriveLaunchShape, parseGooseConfig } from "../src/collectors/parse.js";
 import { collectSource } from "../src/collectors/discover.js";
 import { readFileSync } from "node:fs";
 
@@ -116,5 +116,68 @@ describe("collectSource", () => {
 
   it("returns null for absent files (absence is not an error)", () => {
     expect(collectSource({ path: fixturePath("does-not-exist.json"), client: "cursor" })).toBeNull();
+  });
+});
+
+describe("deriveLaunchShape", () => {
+  it("classifies npm runners", () => {
+    expect(deriveLaunchShape("npx")).toBe("npm");
+    expect(deriveLaunchShape("bunx")).toBe("npm");
+  });
+
+  it("classifies python, container, and direct runtimes", () => {
+    expect(deriveLaunchShape("uvx")).toBe("pypi");
+    expect(deriveLaunchShape("pipx")).toBe("pypi");
+    expect(deriveLaunchShape("docker")).toBe("container");
+    expect(deriveLaunchShape("podman")).toBe("container");
+    expect(deriveLaunchShape("node")).toBe("node");
+    expect(deriveLaunchShape("python3")).toBe("python");
+    expect(deriveLaunchShape("deno")).toBe("deno");
+    expect(deriveLaunchShape("cargo")).toBe("rust");
+  });
+
+  it("matches on the command basename, so absolute paths classify too", () => {
+    expect(deriveLaunchShape("/usr/local/bin/uvx")).toBe("pypi");
+    expect(deriveLaunchShape("/opt/homebrew/bin/node")).toBe("node");
+  });
+
+  it("treats an unknown command as a local binary and no command as remote", () => {
+    expect(deriveLaunchShape("/opt/tools/my-server")).toBe("local-binary");
+    expect(deriveLaunchShape("my-server")).toBe("local-binary");
+    expect(deriveLaunchShape(undefined)).toBe("remote");
+  });
+});
+
+describe("parseGooseConfig", () => {
+  const yaml = () => readFileSync(fixturePath("goose-config.yaml"), "utf-8");
+
+  it("extracts only launchable extensions (builtins have no cmd/uri, so fall out)", () => {
+    const servers = parseGooseConfig(yaml(), "/home/x/.config/goose/config.yaml");
+    expect(servers.map(s => s.name).sort()).toEqual(["context7", "local-notes"]);
+  });
+
+  it("routes a Goose npx server into the npm path, fully assessable", () => {
+    const context7 = parseGooseConfig(yaml(), "/p").find(s => s.name === "context7")!;
+    expect(context7.client).toBe("goose");
+    expect(context7.command).toBe("npx");
+    expect(context7.args).toEqual(["-y", "@upstash/context7-mcp"]);
+    expect(context7.launchShape).toBe("npm");
+    // unpinned: no @version on the spec
+    expect(context7.npmPackage).toEqual({ spec: "@upstash/context7-mcp", name: "@upstash/context7-mcp" });
+  });
+
+  it("classifies a bare-path Goose server as a local binary (no npm package)", () => {
+    const notes = parseGooseConfig(yaml(), "/p").find(s => s.name === "local-notes")!;
+    expect(notes.launchShape).toBe("local-binary");
+    expect(notes.npmPackage).toBeUndefined();
+  });
+
+  it("returns [] when there is no extensions block (not an error)", () => {
+    expect(parseGooseConfig("GOOSE_MODEL: gpt-4o\n", "/p")).toEqual([]);
+  });
+
+  it("throws on an unrecognized structure, so the caller degrades to a skip", () => {
+    const malformed = "extensions:\n  - this-is-a-sequence-not-a-map\n";
+    expect(() => parseGooseConfig(malformed, "/p")).toThrow();
   });
 });

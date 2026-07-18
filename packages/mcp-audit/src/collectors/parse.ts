@@ -4,10 +4,40 @@
 // access here; discover.ts owns paths and reads. This keeps the parsers
 // fixture-testable.
 
-import type { McpClient, McpServerEntry, NpmPackageRef } from "../types.js";
+import type { LaunchShape, McpClient, McpServerEntry, NpmPackageRef } from "../types.js";
 
 /** Commands that resolve and run an npm package at launch time. */
 const NPM_RUNNERS = new Set(["npx", "bunx"]);
+
+/** Runner commands for other ecosystems, keyed by the launch shape they imply.
+ * Matched on the command's basename so `/usr/bin/uvx` classifies too. */
+const PYTHON_RUNNERS = new Set(["uvx", "pipx"]);
+const CONTAINER_RUNNERS = new Set(["docker", "podman"]);
+const DIRECT_RUNTIMES: Record<string, LaunchShape> = {
+  node: "node",
+  python: "python", python3: "python",
+  deno: "deno",
+  go: "go",
+  ruby: "ruby", gem: "ruby",
+  java: "jvm", jbang: "jvm",
+  cargo: "rust",
+};
+
+function baseName(cmd: string): string {
+  const i = Math.max(cmd.lastIndexOf("/"), cmd.lastIndexOf("\\"));
+  return i >= 0 ? cmd.slice(i + 1) : cmd;
+}
+
+/** Classify how a server is launched. `undefined` command = a remote (url)
+ * entry. An unrecognized command is a local binary on PATH or a bare path. */
+export function deriveLaunchShape(command: string | undefined): LaunchShape {
+  if (!command) return "remote";
+  const c = baseName(command);
+  if (NPM_RUNNERS.has(c)) return "npm";
+  if (PYTHON_RUNNERS.has(c)) return "pypi";
+  if (CONTAINER_RUNNERS.has(c)) return "container";
+  return DIRECT_RUNTIMES[c] ?? "local-binary";
+}
 
 /** Valid npm package name (scoped or not). Anything else is not treated as
  * an npm reference, which also keeps arbitrary config strings out of
@@ -69,7 +99,10 @@ function toEntry(name: string, raw: RawServer, source: string, client: McpClient
   if (raw.env && typeof raw.env === "object") {
     for (const [k, v] of Object.entries(raw.env)) env[sanitizeConfigString(k)] = v;
   }
-  const entry: McpServerEntry = { name: sanitizeConfigString(name), source, client, command, args, env };
+  const entry: McpServerEntry = {
+    name: sanitizeConfigString(name), source, client, command, args, env,
+    launchShape: deriveLaunchShape(command),
+  };
   if (typeof raw.url === "string") entry.url = sanitizeConfigString(raw.url);
   const pkg = parseNpmPackageRef(command, args);
   if (pkg) entry.npmPackage = pkg;
@@ -88,4 +121,78 @@ export function parseConfigContent(content: string, path: string, client: McpCli
     parsed?.mcpServers ?? parsed?.mcp?.servers ?? parsed?.servers;
   if (!table || typeof table !== "object") return [];
   return Object.entries(table).map(([name, raw]) => toEntry(name, raw ?? {}, path, client));
+}
+
+/** Strip matching single/double quotes from a scalar. */
+function unquote(value: string): string {
+  const t = value.trim();
+  if (t.length >= 2 && ((t[0] === "'" && t.endsWith("'")) || (t[0] === '"' && t.endsWith('"')))) {
+    return t.slice(1, -1);
+  }
+  return t;
+}
+
+/** Parse a Goose config (`~/.config/goose/config.yaml`) — the one non-JSON
+ * client. We do NOT take a YAML dependency: a supply-chain auditor adding a
+ * runtime dep is against its own thesis, and this file is machine-generated
+ * with a regular, narrow shape. This reads exactly that shape — the
+ * `extensions:` map, 2-space block indentation, block sequences, flow `{}`/`[]`
+ * — and reuses `toEntry`, so Goose entries get the same sanitization and
+ * launch-shape/npm detection as every other client (Goose's `context7` server
+ * launches via `npx`, so it lands in the npm path and is fully assessed).
+ *
+ * The discriminator for "is a server" is the same as the JSON path: the entry
+ * names a `cmd` or a `uri`. Goose's `type: builtin` extensions have neither and
+ * are excluded with no special-casing. Anything the reader does not recognize
+ * throws, which the caller turns into an unreadable-source skip — never a
+ * partial or silent entry. */
+export function parseGooseConfig(content: string, path: string): McpServerEntry[] {
+  const lines = content.split(/\r?\n/);
+  let i = lines.findIndex(l => /^extensions:\s*$/.test(l));
+  if (i === -1) return []; // no extensions configured; not an error
+  i++;
+
+  const entries: McpServerEntry[] = [];
+  while (i < lines.length) {
+    const line = lines[i];
+    if (line.trim() === "") { i++; continue; }
+    const indent = line.length - line.trimStart().length;
+    if (indent === 0) break; // dedented out of the extensions block
+
+    const nameMatch = /^ {2}([A-Za-z0-9_.-]+):\s*$/.exec(line);
+    if (indent !== 2 || !nameMatch) {
+      throw new Error(`unrecognized Goose extensions structure at line ${i + 1}`);
+    }
+    const name = nameMatch[1];
+    i++;
+
+    const raw: RawServer = { args: [] };
+    while (i < lines.length) {
+      const l = lines[i];
+      if (l.trim() === "") { i++; continue; }
+      const ind = l.length - l.trimStart().length;
+      if (ind <= 2) break; // next extension key, or end of block
+      const body = l.trimStart();
+
+      const seq = /^-\s+(.*)$/.exec(body);
+      if (seq) { (raw.args as string[]).push(unquote(seq[1])); i++; continue; }
+
+      const kv = /^([A-Za-z0-9_]+):\s*(.*)$/.exec(body);
+      if (kv) {
+        const key = kv[1];
+        const val = kv[2].trim();
+        if (key === "cmd" && val) raw.command = unquote(val);
+        else if (key === "uri" && val) raw.url = unquote(val);
+        // args come through the sequence branch; envs/env_keys are expected in
+        // the empty flow form ({}/[]) on disk — a non-empty block env is not
+        // consumed here (documented limitation; env values are never emitted
+        // anyway, only keys for secret classification).
+      }
+      i++;
+    }
+
+    // Same discriminator as the JSON path: a launchable command or a url.
+    if (raw.command || raw.url) entries.push(toEntry(name, raw, path, "goose"));
+  }
+  return entries;
 }

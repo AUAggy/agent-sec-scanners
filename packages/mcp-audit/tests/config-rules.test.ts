@@ -18,6 +18,7 @@ function server(overrides: Partial<McpServerEntry>): McpServerEntry {
     command: "npx",
     args: ["-y", "test-mcp@1.0.0"],
     env: {},
+    launchShape: "npm",
     npmPackage: { spec: "test-mcp@1.0.0", name: "test-mcp", versionSpec: "1.0.0" },
     ...overrides,
   };

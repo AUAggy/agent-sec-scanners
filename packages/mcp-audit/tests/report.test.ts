@@ -12,6 +12,7 @@ const server: McpServerEntry = {
   command: "npx",
   args: ["-y", "risky-mcp"],
   env: { API_KEY: "sk-FAKEFAKEFAKEFAKEFAKE1234" },
+  launchShape: "npm",
   npmPackage: { spec: "risky-mcp", name: "risky-mcp" },
 };
 

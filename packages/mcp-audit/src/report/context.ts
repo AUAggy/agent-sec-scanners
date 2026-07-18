@@ -9,7 +9,7 @@ export function categorizeFinding(ruleId: string): string {
   if (ruleId === "secrets-in-env-block") return "Secrets & Identity";
   if (/^(tool-|destructive-|oversized-)/.test(ruleId)) return "Tool Manifests";
   if (/-since-baseline$/.test(ruleId) || ruleId === "baseline-unreadable") return "Drift";
-  if (ruleId === "config-source-unreadable" || ruleId === "registry-lookup-skipped" || ruleId === "manifest-scan-failed") return "Coverage";
+  if (ruleId === "config-source-unreadable" || ruleId === "registry-lookup-skipped" || ruleId === "manifest-scan-failed" || ruleId === "coverage-skip") return "Coverage";
   return "Supply Chain";
 }
 
