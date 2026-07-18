@@ -3,13 +3,15 @@
 // Tool 1: discover configured MCP servers, fetch registry facts, evaluate
 // rules, and surface every coverage gap as a skip finding.
 
-import type { Finding } from "@miaggy/core";
+import { NIST_AI_RMF, type Finding } from "@miaggy/core";
 import { ruleRegistry } from "../rules/registry.js";
 import "../rules/config-rules.js";
 import { discoverMcpConfig } from "../collectors/discover.js";
 import { lookupPackage } from "../registry/npm.js";
-import { NIST_AI_RMF } from "@miaggy/core";
 import type { McpConfigSnapshot, RegistryInfo } from "../types.js";
+
+/** findingId-safe slug for paths and package names. */
+const slug = (s: string) => s.replace(/[^A-Za-z0-9]+/g, "-");
 
 export interface AuditMcpConfigInput {
   /** Project directory for project-level configs. Default: process.cwd(). */
@@ -50,7 +52,7 @@ export async function auditMcpConfig(input: AuditMcpConfigInput): Promise<Findin
   for (const source of snapshot.sources) {
     if (source.status !== "unreadable") continue;
     findings.push({
-      findingId: `mcp-config-unreadable-${source.client}-${source.path.replace(/[^A-Za-z0-9]+/g, "-")}`,
+      findingId: `mcp-config-unreadable-${source.client}-${slug(source.path)}`,
       ruleId: "config-source-unreadable",
       title: `Could not parse MCP config: ${source.path}`,
       severity: "low",
@@ -65,7 +67,7 @@ export async function auditMcpConfig(input: AuditMcpConfigInput): Promise<Findin
   for (const [name, info] of registryByName) {
     if (info !== "failed") continue;
     findings.push({
-      findingId: `mcp-registry-skipped-${name.replace(/[^A-Za-z0-9]+/g, "-")}`,
+      findingId: `mcp-registry-skipped-${slug(name)}`,
       ruleId: "registry-lookup-skipped",
       title: `npm registry lookup skipped for ${name}`,
       severity: "low",
