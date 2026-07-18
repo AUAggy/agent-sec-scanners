@@ -22,7 +22,7 @@ jobs:
         with:
           node-version: 24
           registry-url: https://registry.npmjs.org
-      - name: Resolve workspace from release tag
+      - name: Resolve workspace and dist-tag from release tag
         id: pkg
         run: |
           case "${GITHUB_REF_NAME}" in
@@ -30,7 +30,12 @@ jobs:
             bedrock-v*) echo "workspace=bedrock-security-mcp" >> "$GITHUB_OUTPUT" ;;
             *) echo "Unrecognized release tag '${GITHUB_REF_NAME}' (expected core-v* or bedrock-v*)" >&2; exit 1 ;;
           esac
+          # Prerelease versions (-rc.N etc.) must not become `latest` for npx users.
+          case "${GITHUB_REF_NAME}" in
+            *-rc*|*-alpha*|*-beta*|*-next*) echo "disttag=next" >> "$GITHUB_OUTPUT" ;;
+            *)                              echo "disttag=latest" >> "$GITHUB_OUTPUT" ;;
+          esac
       - run: npm ci
       - run: npm audit --audit-level=high
       - run: npm run build
-      - run: npm publish --provenance --access public -w ${{ steps.pkg.outputs.workspace }}
+      - run: npm publish --provenance --access public --tag ${{ steps.pkg.outputs.disttag }} -w ${{ steps.pkg.outputs.workspace }}
