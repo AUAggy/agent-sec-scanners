@@ -5,6 +5,7 @@ import { createMcpServer } from "@miaggy/core";
 import { auditMcpConfig } from "./tools/audit-mcp-config.js";
 import { scanMcpManifests } from "./tools/scan-manifests.js";
 import { generateMcpAuditReport } from "./tools/generate-report.js";
+import { runSnapshotCli } from "./tools/snapshot.js";
 import { runCli } from "./cli.js";
 
 // ── Tool registry (3 tools; the cap) ──────────────────────────
@@ -87,8 +88,12 @@ async function main() {
     const code = await runCli(process.argv.slice(3));
     process.exit(code);
   }
+  if (sub === "snapshot") {
+    const code = await runSnapshotCli(process.argv.slice(3));
+    process.exit(code);
+  }
   if (sub !== undefined) {
-    console.error(`Unknown subcommand '${sub}'. Use 'audit' or run with no args for the MCP server.`);
+    console.error(`Unknown subcommand '${sub}'. Use 'audit', 'snapshot', or run with no args for the MCP server.`);
     process.exit(2);
   }
   await mcp.start();

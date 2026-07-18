@@ -119,6 +119,31 @@
       "rationale": "Length is a weak signal on its own, so this is cataloged low: it directs human review to the descriptions worth reading in full."
     },
     {
+      "ruleId": "manifest-drift-since-baseline",
+      "title": "Server drifted from the recorded baseline",
+      "severity": "high",
+      "appliesTo": "baseline_diff",
+      "complianceFrameworks": [
+        "OWASP_AGENTIC:ASI04",
+        "MITRE_ATLAS",
+        "NIST_AI_RMF"
+      ],
+      "threat": "Silent change is how a compromised update lands: same server name, new behavior. A changed tool description with unchanged tool names is the classic rug-pull shape.",
+      "rationale": "The baseline turns 'my tools changed' from unknowable into a diff. High severity because unreviewed change in an agent's tool chain is exactly what this pack exists to catch."
+    },
+    {
+      "ruleId": "new-server-since-baseline",
+      "title": "Server added since the recorded baseline",
+      "severity": "medium",
+      "appliesTo": "baseline_diff",
+      "complianceFrameworks": [
+        "OWASP_AGENTIC:ASI04",
+        "NIST_AI_RMF"
+      ],
+      "threat": "A server added outside the reviewed set expands the agent's tool chain without review — whether by a teammate, an installer, or an attacker with config write access.",
+      "rationale": "Medium, not high: new servers are often legitimate. The point is that additions surface for review instead of blending in."
+    },
+    {
       "ruleId": "config-source-unreadable",
       "title": "MCP config file could not be read",
       "severity": "low",
@@ -139,6 +164,17 @@
       ],
       "threat": "An unscanned server silently escapes the manifest rules; a clean scan would overstate coverage.",
       "rationale": "Every server the scan cannot reach is named in the report, so absence of findings is never mistaken for absence of risk."
+    },
+    {
+      "ruleId": "baseline-unreadable",
+      "title": "Drift baseline could not be read",
+      "severity": "low",
+      "appliesTo": "baseline_diff",
+      "complianceFrameworks": [
+        "NIST_AI_RMF"
+      ],
+      "threat": "A silently ignored baseline turns drift detection off while the user believes it ran.",
+      "rationale": "The honest output for a broken baseline is a skip finding, never a silent pass."
     },
     {
       "ruleId": "registry-lookup-skipped",

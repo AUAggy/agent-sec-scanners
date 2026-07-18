@@ -8,6 +8,7 @@ import { ruleRegistry, type RuleCatalogEntry } from "./registry.js";
 // Register rules wherever the catalog is consumed.
 import "./config-rules.js";
 import "./manifest-rules.js";
+import "./drift-rules.js";
 
 const TOOL_FINDING_METADATA: RuleCatalogEntry[] = [
   {
@@ -28,6 +29,16 @@ const TOOL_FINDING_METADATA: RuleCatalogEntry[] = [
     rationale: "Every server the scan cannot reach is named in the report, so absence of findings is never mistaken for absence of risk.",
     severity: "low",
     appliesTo: "mcp_server",
+    complianceFrameworks: [NIST_AI_RMF],
+  },
+  {
+    ruleId: "baseline-unreadable",
+    title: "Drift baseline could not be read",
+    description: "The file passed to --baseline could not be read or parsed; drift detection did not run.",
+    threat: "A silently ignored baseline turns drift detection off while the user believes it ran.",
+    rationale: "The honest output for a broken baseline is a skip finding, never a silent pass.",
+    severity: "low",
+    appliesTo: "baseline_diff",
     complianceFrameworks: [NIST_AI_RMF],
   },
   {

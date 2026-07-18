@@ -23,7 +23,18 @@ Two modes with an explicit line between them: the **static audit never executes 
 | `destructive-tool-unannotated` | medium | Delete/send/pay/execute-sounding tools with neither `readOnlyHint` nor `destructiveHint` |
 | `oversized-tool-description` | low | Multi-thousand-character descriptions, where smuggled instructions hide |
 
-Unreadable config files, failed registry lookups, and unscannable servers become skip findings, never a silent empty: the report always states what was not checked.
+## Drift detection
+
+Record a baseline once, then flag anything that changes:
+
+```bash
+npx -y @miaggy/mcp-audit snapshot                       # writes mcp-audit-baseline.json
+npx -y @miaggy/mcp-audit audit --baseline mcp-audit-baseline.json
+```
+
+The diff flags changed servers (`manifest-drift-since-baseline`, high — including the rug-pull shape where tool names stay identical but a description changes) and additions (`new-server-since-baseline`, medium). The baseline stores env variable names and hashed tool descriptions, never values; the format is specified in [`docs/baseline-format.md`](docs/baseline-format.md). Accept expected changes by taking a fresh snapshot. Snapshotting captures live manifests, so it performs the same handshake as `--manifests`.
+
+Unreadable config files, failed registry lookups, unscannable servers, and unreadable baselines become skip findings, never a silent empty: the report always states what was not checked.
 
 ## Usage
 
