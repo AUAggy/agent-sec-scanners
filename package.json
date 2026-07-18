@@ -8,7 +8,7 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "npm run build -w @miaggy/core && npm run build -w bedrock-security-mcp",
+    "build": "npm run build -w @miaggy/core && npm run build -w bedrock-security-mcp && npm run build -w @miaggy/mcp-audit",
     "test": "npm run build -w @miaggy/core && npm run test --workspaces"
   },
   "devDependencies": {

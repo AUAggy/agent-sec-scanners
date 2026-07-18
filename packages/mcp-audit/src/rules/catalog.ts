@@ -1,0 +1,47 @@
+// src/rules/catalog.ts
+//
+// Pack catalog: registry rules + metadata for findings the audit tool
+// constructs outside the registry (skip findings).
+
+import { createRuleCatalog, NIST_AI_RMF } from "@miaggy/core";
+import { ruleRegistry, type RuleCatalogEntry } from "./registry.js";
+// Register rules wherever the catalog is consumed.
+import "./config-rules.js";
+
+const TOOL_FINDING_METADATA: RuleCatalogEntry[] = [
+  {
+    ruleId: "config-source-unreadable",
+    title: "MCP config file could not be read",
+    description: "A client configuration file exists but could not be parsed; its servers were not audited.",
+    threat: "An unparseable config silently hides servers from the audit; the user believes coverage is complete when part of it is dark.",
+    rationale: "The honest output for a broken discovery path is a skip finding, never a silent empty. Same pattern as the bedrock pack's detection tool.",
+    severity: "low",
+    appliesTo: "config_source",
+    complianceFrameworks: [NIST_AI_RMF],
+  },
+  {
+    ruleId: "registry-lookup-skipped",
+    title: "npm registry lookup skipped",
+    description: "Registry facts for a package could not be fetched (offline or registry error); provenance, install-script, and maintenance rules did not run for it.",
+    threat: "Missing registry data silently disables three rules; a clean report would overstate what was checked.",
+    rationale: "Surfacing the skipped lookup keeps the report honest about coverage instead of implying the registry-backed checks passed.",
+    severity: "low",
+    appliesTo: "mcp_server",
+    complianceFrameworks: [NIST_AI_RMF],
+  },
+];
+
+const catalog = createRuleCatalog({
+  registry: ruleRegistry,
+  extraEntries: TOOL_FINDING_METADATA,
+});
+
+/** All rule catalog entries: registry rules + tool-constructed findings. */
+export function allRuleMetadata(): RuleCatalogEntry[] {
+  return catalog.all();
+}
+
+/** Lookup metadata for a finding's ruleId. */
+export function getRuleMetadata(ruleId: string): RuleCatalogEntry | undefined {
+  return catalog.get(ruleId);
+}
