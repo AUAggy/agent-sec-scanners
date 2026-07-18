@@ -1,6 +1,6 @@
 {
   "name": "@miaggy/mcp-audit",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Audits the MCP servers configured on a machine for supply-chain risk: unpinned versions, inline secrets, missing provenance, install scripts, maintenance signals",
   "type": "module",
   "bin": {
@@ -41,7 +41,7 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@miaggy/core": "^0.2.0",
+    "@miaggy/core": "^0.3.0",
     "@modelcontextprotocol/sdk": "^1.12.1"
   },
   "devDependencies": {
