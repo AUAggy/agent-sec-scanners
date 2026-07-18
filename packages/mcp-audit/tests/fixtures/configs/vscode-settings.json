@@ -1,0 +1,13 @@
+{
+  // editor preferences elided
+  "editor.fontSize": 13,
+  /* MCP servers configured through VS Code */
+  "mcp": {
+    "servers": {
+      "vscode-unpinned": {
+        "command": "npx",
+        "args": ["-y", "some-vscode-mcp"]
+      }
+    }
+  }
+}
