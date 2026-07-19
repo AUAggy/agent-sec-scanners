@@ -75,7 +75,11 @@ export async function generateMcpAuditReport(input: GenerateReportInput): Promis
   const outputDir = process.env.MCP_AUDIT_OUTPUT_DIR;
   if (outputDir) {
     const html = generateHtmlReport(findings, opts, HTML_CONTEXT);
-    const filename = `mcp-audit-${new Date().toISOString().slice(0, 10)}.html`;
+    // Local date, not UTC: the filename should match the user's calendar day.
+    // (toISOString() is UTC and reads a day behind for UTC+ timezones.)
+    const d = new Date();
+    const localDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const filename = `mcp-audit-${localDate}.html`;
     mkdirSync(outputDir, { recursive: true });
     htmlPath = `${outputDir}/${filename}`;
     writeFileSync(htmlPath, html, "utf-8");

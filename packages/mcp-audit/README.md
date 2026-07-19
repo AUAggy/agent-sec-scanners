@@ -1,6 +1,6 @@
 # @miaggy/mcp-audit
 
-Audits the MCP servers a machine is configured to run, for supply-chain risk and tool-manifest poisoning. It reads the config files of Claude Desktop, Claude Code, Cursor, and VS Code, checks each configured npm package against the public registry, and reports findings with threat rationale, a posture score, and a remediation roadmap.
+Audits the MCP servers a machine is configured to run, for supply-chain risk and tool-manifest poisoning. It reads the config files of Claude Desktop, Claude Code (including project-scoped servers), Cursor, VS Code, and Goose, checks each configured npm or PyPI package against its public registry, and reports findings with threat rationale, a posture score, and a remediation roadmap. Every discovered server is accounted for — see [Coverage](#coverage).
 
 Two modes with an explicit line between them: the **static audit never executes a discovered server**. The **manifest scan** (`--manifests`, or the `scan_mcp_manifests` tool) is the opt-in that does: it starts each configured stdio server with a handshake-only MCP client — initialize and tools/list, never a tool call — then shuts it down. Scanned servers receive their configured env, which they need to start; you already run them with exactly that env.
 
@@ -8,7 +8,7 @@ Two modes with an explicit line between them: the **static audit never executes 
 
 | Rule | Severity | What it catches |
 |---|---|---|
-| `unpinned-server-version` | high | `npx -y some-mcp` with no `@version`: every client start runs whatever the registry serves |
+| `unpinned-server-version` | high | `npx -y some-mcp` or `uvx some-mcp` with no `@version`: every client start runs whatever the registry serves |
 | `secrets-in-env-block` | high | Literal API keys or tokens in a config env block (the finding names the variable, never the value) |
 | `server-no-provenance` | medium | Package has no npm provenance attestation binding it to a source build |
 | `server-install-scripts` | medium | Package declares preinstall/install/postinstall hooks |
@@ -36,6 +36,21 @@ The diff flags changed servers (`manifest-drift-since-baseline`, high — includ
 
 Unreadable config files, failed registry lookups, unscannable servers, and unreadable baselines become skip findings, never a silent empty: the report always states what was not checked.
 
+## Coverage
+
+**Clients discovered.** Claude Desktop, Claude Code (top-level *and* project-scoped servers in `~/.claude.json`), Cursor, VS Code, and Goose (`config.yaml`). A config file for a client you don't run is simply absent, not a gap. Windsurf, Cline, Continue, and Zed are **not yet discovered** — a known gap.
+
+**What gets assessed depends on how a server is launched.** Every discovered server appears in the report — assessed, or a named `NOT_APPLICABLE` coverage-skip stating exactly what was not checked and why:
+
+| Launch shape | Example | Assessment |
+|---|---|---|
+| npm | `npx`, `bunx` | full: pinning, provenance, install scripts, maintenance |
+| PyPI | `uvx`, `pipx` | pinning + maintenance. PyPI publishes no provenance or install-script data, so those two are named as a residual rather than assumed to pass |
+| container / node / python / local binary | `docker`, `node`, a path | inline-secrets only; no package registry to query — named as a coverage-skip |
+| remote (`url`) | an SSE/HTTP endpoint | not locally assessable by the static audit — named as a coverage-skip (the opt-in `--manifests` scan can inspect a stdio server's live tools) |
+
+An empty findings list therefore means "looked and found nothing," never "did not look."
+
 ## Usage
 
 As a CLI, for humans and CI:
@@ -52,7 +67,7 @@ As an MCP server (ask your client to audit its own configuration):
   "mcpServers": {
     "mcp-audit": {
       "command": "npx",
-      "args": ["-y", "@miaggy/mcp-audit@0.1.0"]
+      "args": ["-y", "@miaggy/mcp-audit@0.3.0"]
     }
   }
 }

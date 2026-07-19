@@ -4,7 +4,9 @@
 // core extraction unchanged: rule evaluation over committed fixtures, the
 // markdown report, the HTML report, the CLI --json serialization, and the
 // posture score. The extracted engine (bedrock-security-mcp@0.2.0) must keep
-// every golden in tests/goldens/ green without regenerating it.
+// every golden in tests/goldens/ green without regenerating it — except the
+// footer version, which now reads from package.json and is normalized to a
+// placeholder in the HTML goldens (version is variable metadata, not output).
 //
 // The system clock is frozen so the report "Generated" timestamps are stable.
 
@@ -106,14 +108,20 @@ describe("golden: markdown report", () => {
   });
 });
 
+// The footer version now reads from package.json (was a hardcoded "v0.1.0").
+// The version is variable metadata, not part of output correctness, so the
+// golden normalizes it to a placeholder — every other byte stays pinned.
+const normalizeVersion = (html: string) =>
+  html.replace(/(bedrock-security-mcp v)\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?/g, "$1X.Y.Z");
+
 describe("golden: HTML report", () => {
   it("full finding set", async () => {
-    await expect(generateHtmlReport(FULL_SET, REPORT_OPTS))
+    await expect(normalizeVersion(generateHtmlReport(FULL_SET, REPORT_OPTS)))
       .toMatchFileSnapshot("goldens/report-full.html");
   });
 
   it("empty finding set", async () => {
-    await expect(generateHtmlReport([], REPORT_OPTS))
+    await expect(normalizeVersion(generateHtmlReport([], REPORT_OPTS)))
       .toMatchFileSnapshot("goldens/report-empty.html");
   });
 });
