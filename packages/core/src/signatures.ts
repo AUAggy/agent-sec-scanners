@@ -31,7 +31,7 @@ export const INJECTION_SIGNATURES: Array<{ name: string; patterns: RegExp[]; sev
     name: "roleplay-jailbreak",
     patterns: [
       /you\s+are\s+now\s+(DAN|STAN|DUDE|jailbreak)/i,
-      /pretend\s+(you\s+are|to\s+be)\s+a\s+(different|new|unrestricted|uncensored)\s+(AI|model|assistant)/i,
+      /pretend\s+(you\s+are|to\s+be)\s+an?\s+(different|new|unrestricted|uncensored)\s+(AI|model|assistant)/i,
       /act\s+as\s+if\s+you\s+(have|are)\s+no\s+(restrictions?|limitations?|rules?|guidelines?)/i,
       /from\s+now\s+on\s+you\s+(are|will\s+be)\s+(DAN|a\s+different\s+AI)/i,
     ],
