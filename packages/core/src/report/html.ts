@@ -72,6 +72,8 @@ export function generateHtmlReport(
   const byStatus = { FAIL: 0, PASS: 0, ERROR: 0, NOT_APPLICABLE: 0 };
   const violations = findings.filter(f => f.status === "FAIL");
   const passed = findings.filter(f => f.status === "PASS");
+  const notAssessed = findings.filter(f => f.status === "NOT_APPLICABLE");
+  const naLabel = notAssessed.length > 0 ? `, ${notAssessed.length} not assessed` : "";
 
   for (const f of findings) {
     if (f.severity in bySeverity) bySeverity[f.severity]++;
@@ -278,6 +280,20 @@ export function generateHtmlReport(
     return `<section class="passed-section">
       <h2 class="section-heading">Passed checks (${passedFindings.length})</h2>
       <p class="passed-summary">${passedFindings.map(f => escapeHtml(f.title)).join("; ")}.</p>
+    </section>`;
+  }
+
+  // --- Not assessed (coverage) ---------------------------------------------------
+  function notAssessedSection(items: Finding[]): string {
+    if (items.length === 0) return "";
+    const rows = items.map(f => `<div class="na-item">
+        <span class="na-name">${escapeHtml(f.resource ?? "")}</span>
+        <p class="na-why">${escapeHtml(f.details ?? f.title)}</p>
+      </div>`).join("");
+    return `<section class="na-section">
+      <h2 class="section-heading">Not assessed (${items.length})</h2>
+      <p class="na-intro">Discovered but not fully checked. Each is named with the reason, so an empty findings list never means a server was skipped silently.</p>
+      ${rows}
     </section>`;
   }
 
@@ -643,6 +659,31 @@ export function generateHtmlReport(
   }
   .passed-section .section-heading { border-bottom-color: ${PASS_COLOR}; }
 
+  /* --- Not assessed --------------------------------------------------------------- */
+  .na-intro {
+    font-size: 13px;
+    color: var(--ink-2);
+    padding: 12px 0 4px;
+    line-height: 1.7;
+  }
+  .na-item {
+    border-bottom: 1px solid var(--hairline);
+    padding: 11px 0;
+  }
+  .na-name {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12.5px;
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .na-why {
+    font-size: 13px;
+    color: var(--ink-2);
+    line-height: 1.6;
+    margin-top: 3px;
+  }
+  .na-section .section-heading { border-bottom-color: var(--ink-3); }
+
   /* --- Footer ------------------------------------------------------------------------ */
   .report-footer {
     border-top: 1px solid var(--ink);
@@ -703,7 +744,7 @@ export function generateHtmlReport(
     <div>
       <div class="risk-rating" style="color: ${riskColor};">Overall risk: ${riskRating}</div>
       <div class="health-score" style="color: ${riskColor};">${postureScore}<span class="denom">/100</span></div>
-      <div class="health-label">Posture score · ${violationCount} violation(s), ${byStatus.ERROR} error(s)</div>
+      <div class="health-label">Posture score · ${violationCount} violation(s), ${byStatus.ERROR} error(s)${naLabel}</div>
     </div>
     <div class="figures">
       ${figuresRow()}
@@ -720,6 +761,7 @@ export function generateHtmlReport(
   ${findingSection("low", "Low", violations.filter(f => f.severity === "low"))}
   ${remediationTable(violations)}
   ${complianceTable(violations)}
+  ${notAssessedSection(notAssessed)}
   ${passedSection(passed)}
 </main>
 

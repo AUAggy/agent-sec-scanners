@@ -47,6 +47,7 @@ export function buildMarkdownReport(
 
   const violations = findings.filter(f => f.status === "FAIL");
   const violationCount = violations.length;
+  const notAssessed = findings.filter(f => f.status === "NOT_APPLICABLE");
   const postureScore = computePostureScore(findings);
 
   // ── Build markdown ─────────────────────────────────────────
@@ -195,6 +196,21 @@ export function buildMarkdownReport(
     lines.push(`| ${fw} | ${[...new Set(rules)].map(r => `\`${r}\``).join(", ")} |`);
   }
   lines.push("");
+
+  // Not assessed (coverage)
+  if (notAssessed.length > 0) {
+    lines.push("## Not Assessed");
+    lines.push("");
+    lines.push("Discovered but not fully checked. Each is named with the reason, so an empty findings list never means a server was skipped silently.");
+    lines.push("");
+    lines.push("| Resource | Reason |");
+    lines.push("|----------|--------|");
+    for (const f of notAssessed) {
+      const reason = f.details.replace(/\|/g, "\\|").replace(/\n/g, " ").slice(0, 180);
+      lines.push(`| \`${f.resource.slice(0, 60)}\` | ${reason} |`);
+    }
+    lines.push("");
+  }
 
   // Posture score
   lines.push("## Posture Score");

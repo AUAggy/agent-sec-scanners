@@ -4,6 +4,7 @@ import { buildMarkdownReport, generateHtmlReport } from "@miaggy/core";
 import { MARKDOWN_CONTEXT, HTML_CONTEXT, categorizeFinding } from "../src/report/context.js";
 import { ruleRegistry } from "../src/rules/registry.js";
 import "../src/rules/config-rules.js";
+import { coverageSkipFindings } from "../src/tools/audit-mcp-config.js";
 import type { McpServerEntry, RegistryInfo } from "../src/types.js";
 
 const { version: PKG_VERSION } = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
@@ -44,6 +45,27 @@ describe("markdown report", () => {
     expect(md).toContain("**Threat:**");
     expect(md).toContain("@miaggy/mcp-audit");
     expect(md).not.toContain("FAKEFAKE");
+  });
+});
+
+describe("coverage-skip (NOT_APPLICABLE) findings render in the human report", () => {
+  const skips = coverageSkipFindings([
+    { name: "remote-api", source: "/x/.cursor/mcp.json", client: "cursor", args: [], env: {}, launchShape: "remote", url: "http://x/mcp" },
+    { name: "docs", source: "/x/.claude.json", client: "claude-code", command: "uvx", args: ["docs@latest"], env: {}, launchShape: "pypi", packageRef: { ecosystem: "pypi", spec: "docs@latest", name: "docs", versionSpec: "latest" } },
+  ]);
+
+  it("lists them in a Not Assessed markdown section (not just --json)", () => {
+    const md = buildMarkdownReport(skips, { region: "local", accountId: "host" }, MARKDOWN_CONTEXT);
+    expect(md).toContain("## Not Assessed");
+    expect(md).toContain("remote (url) server");
+    expect(md).toContain("PyPI does not publish");
+  });
+
+  it("lists them in a Not assessed HTML section", () => {
+    const html = generateHtmlReport(skips, { region: "local", accountId: "host" }, HTML_CONTEXT);
+    expect(html).toContain("Not assessed (2)");
+    expect(html).toContain("cursor:remote-api");
+    expect(html).toContain("not assessed"); // health-label count
   });
 });
 
