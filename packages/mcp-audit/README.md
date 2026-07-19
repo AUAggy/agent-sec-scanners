@@ -38,7 +38,11 @@ Unreadable config files, failed registry lookups, unscannable servers, and unrea
 
 ## Coverage
 
-**Clients discovered.** Claude Desktop, Claude Code (top-level *and* project-scoped servers in `~/.claude.json`), Cursor, VS Code, and Goose (`config.yaml`). A config file for a client you don't run is simply absent, not a gap. Windsurf, Cline, Continue, and Zed are **not yet discovered** — a known gap.
+**Clients discovered.** A config file for a client you don't run is simply absent, not a gap.
+
+- **Full support:** Claude Desktop, Claude Code (top-level *and* project-scoped servers in `~/.claude.json`), Cursor, VS Code, Goose (`config.yaml`).
+- **VS Code family:** the `Code`, `Code - Insiders`, and `VSCodium` product directories are all checked (per-OS), so forks are covered. Cline rides the same variant paths (its config lives in VS Code extension storage).
+- **Best-effort:** Windsurf, Cline, Continue, Zed. These are younger and their config schema/paths churn between versions; an unrecognized shape yields zero servers (a graceful no-op), never a crash or a false finding. Covered on a best-effort basis rather than guaranteed.
 
 **What gets assessed depends on how a server is launched.** Every discovered server appears in the report — assessed, or a named `NOT_APPLICABLE` coverage-skip stating exactly what was not checked and why:
 
@@ -46,10 +50,14 @@ Unreadable config files, failed registry lookups, unscannable servers, and unrea
 |---|---|---|
 | npm | `npx`, `bunx` | full: pinning, provenance, install scripts, maintenance |
 | PyPI | `uvx`, `pipx` | pinning + maintenance. PyPI publishes no provenance or install-script data, so those two are named as a residual rather than assumed to pass |
-| container / node / python / local binary | `docker`, `node`, a path | inline-secrets only; no package registry to query — named as a coverage-skip |
+| node / python / local binary | `node`, `python`, a path | inline-secrets only; no package registry to query — named as a coverage-skip |
 | remote (`url`) | an SSE/HTTP endpoint | not locally assessable by the static audit — named as a coverage-skip (the opt-in `--manifests` scan can inspect a stdio server's live tools) |
 
 An empty findings list therefore means "looked and found nothing," never "did not look."
+
+### Deliberately out of scope: container images
+
+Servers launched via `docker`/`podman` are **discovered and named** (each gets a coverage-skip), but their images are **not assessed**, by design. npm and PyPI can be assessed cleanly because each is a single public registry with an anonymous read API. Container images break all three assumptions: they come from many registries (Docker Hub, GHCR, GCR, ECR, Quay, private/self-hosted), most requiring authentication — and a read-only auditor should not hold registry credentials, so many images are structurally unassessable. Deep assessment means pulling and inspecting image layers, which is the job of a dedicated image scanner (**Trivy, Grype, Docker Scout**), not a config-layer auditor. We name every container-launched server so coverage stays honest, and defer to those tools for the image itself. This boundary is version-scoped — if container-launched MCP servers become common, it is worth revisiting.
 
 ## Usage
 

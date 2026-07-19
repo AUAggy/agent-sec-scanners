@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { fileURLToPath } from "node:url";
 import { parseNpmPackageRef, parsePypiPackageRef, parseConfigContent, stripJsonComments, sanitizeConfigString, deriveLaunchShape, parseGooseConfig } from "../src/collectors/parse.js";
-import { collectSource } from "../src/collectors/discover.js";
+import { collectSource, candidatePaths } from "../src/collectors/discover.js";
 import { readFileSync } from "node:fs";
 
 function fixturePath(name: string): string {
@@ -89,6 +89,20 @@ describe("parseConfigContent", () => {
   it("returns empty for configs without a server table", () => {
     expect(parseConfigContent("{}", "/x.json", "claude-code")).toEqual([]);
   });
+
+  it("parses Zed context_servers (snake_case) tolerating comments (JSONC)", () => {
+    const zed = '{\n  // Zed settings\n  "context_servers": { "docs": { "command": "npx", "args": ["-y", "docs-mcp@1.0.0"] } }\n}';
+    const servers = parseConfigContent(zed, "/x/settings.json", "zed");
+    expect(servers).toHaveLength(1);
+    expect(servers[0].name).toBe("docs");
+    expect(servers[0].packageRef?.versionSpec).toBe("1.0.0");
+  });
+
+  it("parses Windsurf/Continue mcpServers via the standard shape", () => {
+    const ws = JSON.stringify({ mcpServers: { s: { command: "npx", args: ["-y", "s-mcp"] } } });
+    expect(parseConfigContent(ws, "/x/mcp_config.json", "windsurf")).toHaveLength(1);
+    expect(parseConfigContent(ws, "/x/config.json", "continue")).toHaveLength(1);
+  });
 });
 
 describe("stripJsonComments", () => {
@@ -116,6 +130,25 @@ describe("collectSource", () => {
 
   it("returns null for absent files (absence is not an error)", () => {
     expect(collectSource({ path: fixturePath("does-not-exist.json"), client: "cursor" })).toBeNull();
+  });
+});
+
+describe("candidatePaths", () => {
+  it("checks every VS Code variant, so VSCodium/Insiders are covered (not just Code)", () => {
+    const paths = candidatePaths("/proj", "/home/u", "darwin").map(p => p.path);
+    expect(paths.some(p => p.includes("VSCodium/User/settings.json"))).toBe(true);
+    expect(paths.some(p => p.includes("Code - Insiders/User/settings.json"))).toBe(true);
+    expect(paths.some(p => p.includes("Application Support/Code/User/settings.json"))).toBe(true);
+  });
+
+  it("includes the best-effort clients, with Cline riding each VS Code variant", () => {
+    const cps = candidatePaths("/proj", "/home/u", "linux");
+    const byClient = (c: string) => cps.filter(p => p.client === c).map(p => p.path);
+    expect(byClient("cline")).toHaveLength(3); // one per VS Code variant
+    expect(byClient("cline")[0]).toContain("saoudrizwan.claude-dev");
+    expect(byClient("windsurf").some(p => p.includes(".codeium/windsurf/mcp_config.json"))).toBe(true);
+    expect(byClient("continue")[0]).toContain(".continue/config.json");
+    expect(byClient("zed")[0]).toContain(".config/zed/settings.json");
   });
 });
 
