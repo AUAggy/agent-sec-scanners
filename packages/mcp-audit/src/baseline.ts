@@ -8,8 +8,14 @@
 import { createHash } from "node:crypto";
 import type { McpConfigSnapshot, McpServerEntry, ToolManifest } from "./types.js";
 
-export const BASELINE_VERSION = 1;
-export const BASELINE_SCHEMA = "https://example.com/miaggy-mcp-audit/baseline-v1.json";
+// v2: server identity is client:name:source (was client:name). The source is
+// part of a server's identity — the same server name can be configured in two
+// places (a project-scoped and a top-level ~/.claude.json entry), and keying on
+// client:name alone collapsed them into one, hiding drift. v1 baselines are
+// rejected by parseBaseline so the user re-snapshots rather than seeing false
+// drift from the key-format change.
+export const BASELINE_VERSION = 2;
+export const BASELINE_SCHEMA = "https://example.com/miaggy-mcp-audit/baseline-v2.json";
 
 export interface BaselineManifest {
   serverVersion?: string;
@@ -21,7 +27,9 @@ export interface BaselineManifest {
 }
 
 export interface BaselineServer {
-  /** `${client}:${name}` — the identity servers are matched on. */
+  /** `${client}:${name}:${source}` — the identity servers are matched on.
+   * Source is included so two same-named servers in different config locations
+   * stay distinct. */
   key: string;
   client: string;
   name: string;
@@ -42,8 +50,8 @@ export interface Baseline {
   servers: BaselineServer[];
 }
 
-export function serverKey(server: Pick<McpServerEntry, "client" | "name">): string {
-  return `${server.client}:${server.name}`;
+export function serverKey(server: Pick<McpServerEntry, "client" | "name" | "source">): string {
+  return `${server.client}:${server.name}:${server.source}`;
 }
 
 export function hashTools(manifest: ToolManifest): string {
@@ -54,7 +62,7 @@ export function hashTools(manifest: ToolManifest): string {
 }
 
 export function createBaseline(snapshot: McpConfigSnapshot, manifests: ToolManifest[]): Baseline {
-  const manifestByKey = new Map(manifests.map(m => [`${m.client}:${m.serverName}`, m]));
+  const manifestByKey = new Map(manifests.map(m => [`${m.client}:${m.serverName}:${m.source}`, m]));
   const servers: BaselineServer[] = snapshot.servers.map(server => {
     const m = manifestByKey.get(serverKey(server));
     return {
@@ -91,7 +99,7 @@ export function serializeBaseline(baseline: Baseline): string {
 export function parseBaseline(text: string): Baseline {
   const doc = JSON.parse(text);
   if (doc?.version !== BASELINE_VERSION) {
-    throw new Error(`unsupported baseline version ${doc?.version ?? "(missing)"} (expected ${BASELINE_VERSION})`);
+    throw new Error(`unsupported baseline version ${doc?.version ?? "(missing)"} (expected ${BASELINE_VERSION}); re-run 'mcp-audit snapshot' to regenerate`);
   }
   if (!Array.isArray(doc.servers)) throw new Error("baseline has no servers array");
   return doc as Baseline;

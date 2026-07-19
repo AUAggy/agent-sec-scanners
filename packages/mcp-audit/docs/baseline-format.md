@@ -1,4 +1,4 @@
-# Drift baseline format (version 1)
+# Drift baseline format (version 2)
 
 The baseline is the file `mcp-audit snapshot` writes and `mcp-audit audit --baseline <file>` reads. It records enough about your MCP configuration to detect change, and deliberately nothing more. It is plain JSON: read it, diff it, commit it to a private repo if you want history.
 
@@ -6,20 +6,20 @@ The baseline is the file `mcp-audit snapshot` writes and `mcp-audit audit --base
 
 ```json
 {
-  "$schema": "https://example.com/miaggy-mcp-audit/baseline-v1.json",
-  "version": 1,
+  "$schema": "https://example.com/miaggy-mcp-audit/baseline-v2.json",
+  "version": 2,
   "createdAt": "2026-07-19T02:00:00.000Z",
   "servers": [ ... ]
 }
 ```
 
-`version` gates parsing: a reader that sees a version it does not support refuses with a `baseline-unreadable` finding rather than guessing. Breaking format changes increment it.
+`version` gates parsing: a reader that sees a version it does not support refuses with a `baseline-unreadable` finding rather than guessing. Breaking format changes increment it. **v2** made the server identity `client:name:source` (was `client:name`): the source is part of a server's identity, so the same server name configured in two places no longer collapses into one entry. A v1 baseline is refused; re-run `mcp-audit snapshot` to regenerate it.
 
 ## Per server
 
 ```json
 {
-  "key": "claude-desktop:notes-mcp",
+  "key": "claude-desktop:notes-mcp:/Users/you/Library/Application Support/Claude/claude_desktop_config.json",
   "client": "claude-desktop",
   "name": "notes-mcp",
   "source": "/Users/you/Library/Application Support/Claude/claude_desktop_config.json",
@@ -33,7 +33,7 @@ The baseline is the file `mcp-audit snapshot` writes and `mcp-audit audit --base
 }
 ```
 
-- `key` (`client:name`) is the identity servers are matched on across snapshots.
+- `key` (`client:name:source`) is the identity servers are matched on across snapshots. Source is included so two same-named servers in different config locations stay distinct.
 - `spec` is the launch identity: the npm spec for npx/bunx servers, otherwise the command line or url.
 - `envKeys` holds environment variable **names only**, sorted. Values never enter the baseline.
 - `manifest` is `null` when the handshake failed or the server is remote; drift rules then skip manifest comparison for that server.

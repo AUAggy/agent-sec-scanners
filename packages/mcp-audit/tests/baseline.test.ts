@@ -39,7 +39,7 @@ describe("createBaseline / serialize / parse", () => {
   it("records identity, env names only, and hashed manifests", () => {
     const baseline = createBaseline(SNAPSHOT, [manifest("notes", TOOLS)]);
     const server = baseline.servers[0];
-    expect(server.key).toBe("claude-desktop:notes");
+    expect(server.key).toBe("claude-desktop:notes:/tmp/c.json");
     expect(server.spec).toBe("notes-mcp@1.0.2");
     expect(server.envKeys).toEqual(["NOTES_API_KEY"]);
     expect(serializeBaseline(baseline)).not.toContain("secret-value");
@@ -112,6 +112,23 @@ describe("diffBaseline", () => {
     expect(items).toHaveLength(1);
     expect(items[0].kind).toBe("new-server");
   });
+
+  it("keeps same-named servers in different sources distinct (source in the key)", () => {
+    const two: McpConfigSnapshot = {
+      sources: [],
+      servers: [
+        { name: "aws-docs", source: "/home/x/.claude.json (project: /p/A)", client: "claude-code", command: "uvx", args: ["awslabs.aws-documentation-mcp-server@latest"], env: {}, launchShape: "pypi", packageRef: { ecosystem: "pypi", spec: "awslabs.aws-documentation-mcp-server@latest", name: "awslabs.aws-documentation-mcp-server", versionSpec: "latest" } },
+        { name: "aws-docs", source: "/home/x/.claude.json (project: /p/B)", client: "claude-code", command: "uvx", args: ["awslabs.aws-documentation-mcp-server@latest"], env: {}, launchShape: "pypi", packageRef: { ecosystem: "pypi", spec: "awslabs.aws-documentation-mcp-server@latest", name: "awslabs.aws-documentation-mcp-server", versionSpec: "latest" } },
+      ],
+    };
+    const b = createBaseline(two, []);
+    // Both instances survive as distinct baseline entries (no collapse to one).
+    expect(b.servers).toHaveLength(2);
+    expect(new Set(b.servers.map(s => s.key)).size).toBe(2);
+    // And an empty baseline sees both as new servers, not one.
+    const emptyBaseline = createBaseline({ sources: [], servers: [] }, []);
+    expect(diffBaseline(emptyBaseline, b)).toHaveLength(2);
+  });
 });
 
 describe("drift rules over diff items", () => {
@@ -136,7 +153,7 @@ describe("drift rules over diff items", () => {
 
   it("new-server-since-baseline fires medium", () => {
     const server: BaselineServer = {
-      key: "claude-desktop:extra", client: "claude-desktop", name: "extra",
+      key: "claude-desktop:extra:/tmp/c.json", client: "claude-desktop", name: "extra",
       source: "/tmp/c.json", spec: "extra-mcp@1.0.0", envKeys: [], manifest: null,
     };
     const [f] = evaluate({ kind: "new-server", current: server });
