@@ -69,8 +69,8 @@ const fid = (rule: string, server: McpServerEntry) =>
 
 ruleRegistry.register({
   ruleId: "unpinned-server-version",
-  title: "MCP server runs an unpinned npm package",
-  description: "The server is launched via npx/bunx without an exact @version pin (none, a dist-tag like @latest, or a range), so every client start executes whatever the registry serves at that moment.",
+  title: "MCP server runs an unpinned package",
+  description: "The server is launched via a package runner (npx/bunx/uvx) without an exact @version pin (none, a dist-tag like @latest, or a range), so every client start executes whatever the registry serves at that moment.",
   threat: "A hijacked maintainer account or a malicious patch release becomes arbitrary code execution inside the agent host on the next client start, with no action by the user.",
   rationale: "Pinning turns a silent auto-upgrade channel into an explicit review point. This is the same guidance this project ships for its own install instructions.",
   severity: "high",
@@ -78,8 +78,9 @@ ruleRegistry.register({
   complianceFrameworks: [OWASP_AGENTIC.ASI04_SUPPLY_CHAIN, OWASP_AGENTIC.ASI05_UNEXPECTED_CODE_EXEC, MITRE_ATLAS],
   check(item) {
     const { server } = item as unknown as ServerItem;
-    const pkg = server.npmPackage;
+    const pkg = server.packageRef;
     if (!pkg || isExactVersion(pkg.versionSpec)) return null;
+    const registryName = pkg.ecosystem === "pypi" ? "PyPI" : "the npm registry";
     return {
       findingId: fid("unpinned", server),
       ruleId: "unpinned-server-version",
@@ -87,7 +88,7 @@ ruleRegistry.register({
       severity: "high",
       status: "FAIL",
       ...base(server),
-      details: `${server.command} ${server.args.join(" ")} resolves '${pkg.spec}' at launch time. ${pkg.versionSpec ? `'${pkg.versionSpec}' is a floating spec, so whatever` : "Whatever"} version the npm registry serves is executed without review.`,
+      details: `${server.command} ${server.args.join(" ")} resolves '${pkg.spec}' at launch time. ${pkg.versionSpec ? `'${pkg.versionSpec}' is a floating spec, so whatever` : "Whatever"} version ${registryName} serves is executed without review.`,
       remediation: `Pin the package in the config: change '${pkg.spec}' to '${pkg.name}@<version>' and bump deliberately after reviewing release notes.`,
       complianceFrameworks: [OWASP_AGENTIC.ASI04_SUPPLY_CHAIN, OWASP_AGENTIC.ASI05_UNEXPECTED_CODE_EXEC, MITRE_ATLAS],
     };
@@ -136,7 +137,7 @@ ruleRegistry.register({
   complianceFrameworks: [OWASP_AGENTIC.ASI04_SUPPLY_CHAIN, MITRE_ATLAS, NIST_AI_RMF],
   check(item) {
     const { server, registry } = item as unknown as ServerItem;
-    if (!server.npmPackage || !registry || !registry.exists || registry.hasProvenance !== false) return null;
+    if (!server.packageRef || !registry || !registry.exists || registry.hasProvenance !== false) return null;
     return {
       findingId: fid("no-provenance", server),
       ruleId: "server-no-provenance",
@@ -162,7 +163,7 @@ ruleRegistry.register({
   complianceFrameworks: [OWASP_AGENTIC.ASI04_SUPPLY_CHAIN, OWASP_AGENTIC.ASI05_UNEXPECTED_CODE_EXEC, MITRE_ATLAS],
   check(item) {
     const { server, registry } = item as unknown as ServerItem;
-    if (!server.npmPackage || !registry || !registry.exists || !registry.hasInstallScript) return null;
+    if (!server.packageRef || !registry || !registry.exists || !registry.hasInstallScript) return null;
     return {
       findingId: fid("install-scripts", server),
       ruleId: "server-install-scripts",
@@ -188,7 +189,7 @@ ruleRegistry.register({
   complianceFrameworks: [OWASP_AGENTIC.ASI04_SUPPLY_CHAIN, NIST_AI_RMF],
   check(item) {
     const { server, registry } = item as unknown as ServerItem;
-    if (!server.npmPackage || !registry || !registry.exists) return null;
+    if (!server.packageRef || !registry || !registry.exists) return null;
     if (registry.maintainerCount === undefined || !registry.lastPublishDate) return null;
     const daysSince = (Date.now() - Date.parse(registry.lastPublishDate)) / 86_400_000;
     if (registry.maintainerCount > 1 || daysSince < STALE_PUBLISH_DAYS) return null;

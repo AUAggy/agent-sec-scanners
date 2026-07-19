@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { fileURLToPath } from "node:url";
-import { parseNpmPackageRef, parseConfigContent, stripJsonComments, sanitizeConfigString, deriveLaunchShape, parseGooseConfig } from "../src/collectors/parse.js";
+import { parseNpmPackageRef, parsePypiPackageRef, parseConfigContent, stripJsonComments, sanitizeConfigString, deriveLaunchShape, parseGooseConfig } from "../src/collectors/parse.js";
 import { collectSource } from "../src/collectors/discover.js";
 import { readFileSync } from "node:fs";
 
@@ -72,10 +72,10 @@ describe("parseConfigContent", () => {
     const servers = parseConfigContent(content, "/x/config.json", "claude-desktop");
     expect(servers).toHaveLength(4);
     const byName = Object.fromEntries(servers.map(s => [s.name, s]));
-    expect(byName["unpinned-tools"].npmPackage).toEqual({ spec: "example-tools-mcp", name: "example-tools-mcp" });
+    expect(byName["unpinned-tools"].packageRef).toEqual({ ecosystem: "npm", spec: "example-tools-mcp", name: "example-tools-mcp" });
     expect(byName["leaky-notes"].env.NOTES_API_KEY).toContain("sk-");
-    expect(byName["pinned-clean"].npmPackage!.versionSpec).toBe("2.1.0");
-    expect(byName["local-script"].npmPackage).toBeUndefined();
+    expect(byName["pinned-clean"].packageRef!.versionSpec).toBe("2.1.0");
+    expect(byName["local-script"].packageRef).toBeUndefined();
   });
 
   it("parses VS Code JSONC with the mcp.servers shape", () => {
@@ -83,7 +83,7 @@ describe("parseConfigContent", () => {
     const servers = parseConfigContent(content, "/x/settings.json", "vscode");
     expect(servers).toHaveLength(1);
     expect(servers[0].name).toBe("vscode-unpinned");
-    expect(servers[0].npmPackage!.versionSpec).toBeUndefined();
+    expect(servers[0].packageRef!.versionSpec).toBeUndefined();
   });
 
   it("returns empty for configs without a server table", () => {
@@ -143,6 +143,32 @@ describe("parseConfigContent: Claude Code project-scoped servers", () => {
   });
 });
 
+describe("parsePypiPackageRef", () => {
+  it("parses uvx specs with and without a version, matching PyPI names", () => {
+    expect(parsePypiPackageRef("uvx", ["awslabs.aws-pricing-mcp-server@latest"]))
+      .toEqual({ spec: "awslabs.aws-pricing-mcp-server@latest", name: "awslabs.aws-pricing-mcp-server", versionSpec: "latest" });
+    expect(parsePypiPackageRef("uvx", ["some.pkg"]))
+      .toEqual({ spec: "some.pkg", name: "some.pkg" });
+  });
+
+  it("skips the pipx 'run' subcommand", () => {
+    expect(parsePypiPackageRef("pipx", ["run", "some-tool@1.2.3"]))
+      .toEqual({ spec: "some-tool@1.2.3", name: "some-tool", versionSpec: "1.2.3" });
+  });
+
+  it("returns undefined for non-python runners and flag-only args", () => {
+    expect(parsePypiPackageRef("npx", ["-y", "foo"])).toBeUndefined();
+    expect(parsePypiPackageRef("uvx", ["-q"])).toBeUndefined();
+  });
+
+  it("tags a uvx entry as a pypi packageRef through parseConfigContent", () => {
+    const cfg = JSON.stringify({ mcpServers: { doc: { command: "uvx", args: ["awslabs.aws-documentation-mcp-server@latest"] } } });
+    const [s] = parseConfigContent(cfg, "/x.json", "claude-code");
+    expect(s.launchShape).toBe("pypi");
+    expect(s.packageRef).toEqual({ ecosystem: "pypi", spec: "awslabs.aws-documentation-mcp-server@latest", name: "awslabs.aws-documentation-mcp-server", versionSpec: "latest" });
+  });
+});
+
 describe("deriveLaunchShape", () => {
   it("classifies npm runners", () => {
     expect(deriveLaunchShape("npx")).toBe("npm");
@@ -187,13 +213,13 @@ describe("parseGooseConfig", () => {
     expect(context7.args).toEqual(["-y", "@upstash/context7-mcp"]);
     expect(context7.launchShape).toBe("npm");
     // unpinned: no @version on the spec
-    expect(context7.npmPackage).toEqual({ spec: "@upstash/context7-mcp", name: "@upstash/context7-mcp" });
+    expect(context7.packageRef).toEqual({ ecosystem: "npm", spec: "@upstash/context7-mcp", name: "@upstash/context7-mcp" });
   });
 
   it("classifies a bare-path Goose server as a local binary (no npm package)", () => {
     const notes = parseGooseConfig(yaml(), "/p").find(s => s.name === "local-notes")!;
     expect(notes.launchShape).toBe("local-binary");
-    expect(notes.npmPackage).toBeUndefined();
+    expect(notes.packageRef).toBeUndefined();
   });
 
   it("returns [] when there is no extensions block (not an error)", () => {

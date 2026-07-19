@@ -1,0 +1,18 @@
+{
+  "info": { "version": "1.0.31" },
+  "releases": {
+    "1.0.30": [
+      { "packagetype": "sdist", "upload_time_iso_8601": "2026-05-01T10:00:00.000000Z" }
+    ],
+    "1.0.31": [
+      { "packagetype": "bdist_wheel", "upload_time_iso_8601": "2026-06-09T13:45:51.764421Z" },
+      { "packagetype": "sdist", "upload_time_iso_8601": "2026-06-09T13:45:53.285175Z" }
+    ]
+  },
+  "ownership": {
+    "roles": [
+      { "role": "Owner", "user": "awslabs-mcp" },
+      { "role": "Owner", "user": "osa-amazon" }
+    ]
+  }
+}

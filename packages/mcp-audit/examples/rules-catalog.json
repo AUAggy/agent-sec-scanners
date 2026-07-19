@@ -5,7 +5,7 @@
   "rules": [
     {
       "ruleId": "unpinned-server-version",
-      "title": "MCP server runs an unpinned npm package",
+      "title": "MCP server runs an unpinned package",
       "severity": "high",
       "appliesTo": "mcp_server",
       "complianceFrameworks": [
@@ -178,7 +178,7 @@
     },
     {
       "ruleId": "registry-lookup-skipped",
-      "title": "npm registry lookup skipped",
+      "title": "Package registry lookup skipped",
       "severity": "low",
       "appliesTo": "mcp_server",
       "complianceFrameworks": [

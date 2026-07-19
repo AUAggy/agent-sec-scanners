@@ -19,7 +19,7 @@ function server(name: string, overrides: Partial<McpServerEntry>): McpServerEntr
     args: ["-y", name],
     env: {},
     launchShape: "npm",
-    npmPackage: { spec: name, name },
+    packageRef: { ecosystem: "npm", spec: name, name },
     ...overrides,
   };
 }
@@ -44,7 +44,7 @@ const findings = ruleRegistry.evaluate([
       server: server("notes-mcp", {
         args: ["-y", "notes-mcp"],
         env: { NOTES_API_KEY: "sk-EXAMPLEEXAMPLEEXAMPLEEXAMPLE" },
-        npmPackage: { spec: "notes-mcp", name: "notes-mcp" },
+        packageRef: { ecosystem: "npm", spec: "notes-mcp", name: "notes-mcp" },
       }),
       registry: undefined,
     },
@@ -54,7 +54,7 @@ const findings = ruleRegistry.evaluate([
     data: {
       server: server("well-kept-mcp", {
         args: ["-y", "well-kept-mcp@2.1.0"],
-        npmPackage: { spec: "well-kept-mcp@2.1.0", name: "well-kept-mcp", versionSpec: "2.1.0" },
+        packageRef: { ecosystem: "npm", spec: "well-kept-mcp@2.1.0", name: "well-kept-mcp", versionSpec: "2.1.0" },
       }),
       registry: registryClean,
     },

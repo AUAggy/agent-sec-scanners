@@ -70,6 +70,24 @@ export function parseNpmPackageRef(command: string | undefined, args: string[]):
   return { spec, name };
 }
 
+/** Valid PyPI project name (PEP 508/503 charset). Keeps arbitrary config
+ * strings out of registry lookup URLs, same as NPM_NAME does for npm. */
+const PYPI_NAME = /^[a-z0-9](?:[a-z0-9._-]*[a-z0-9])?$/i;
+
+/** Parse the PyPI package spec out of a uvx/pipx invocation. Structurally the
+ * same as the npm case (first non-flag arg, `@version` split); `pipx run <name>`
+ * carries a "run" subcommand before the spec, which uvx does not. */
+export function parsePypiPackageRef(command: string | undefined, args: string[]): NpmPackageRef | undefined {
+  if (!command || !PYTHON_RUNNERS.has(baseName(command))) return undefined;
+  const candidates = baseName(command) === "pipx" ? args.filter(a => a !== "run") : args;
+  const spec = candidates.find(a => !a.startsWith("-"));
+  if (!spec) return undefined;
+  const at = spec.lastIndexOf("@");
+  const name = at > 0 ? spec.slice(0, at) : spec;
+  if (name.length > 214 || !PYPI_NAME.test(name)) return undefined;
+  return at > 0 ? { spec, name, versionSpec: spec.slice(at + 1) } : { spec, name };
+}
+
 /** Strip whole-line and block comments so VS Code-style JSONC parses.
  * Naive but sufficient for settings files; strings containing "//" (URLs)
  * survive because only lines that start with "//" are removed. Trailing
@@ -99,13 +117,18 @@ function toEntry(name: string, raw: RawServer, source: string, client: McpClient
   if (raw.env && typeof raw.env === "object") {
     for (const [k, v] of Object.entries(raw.env)) env[sanitizeConfigString(k)] = v;
   }
+  const launchShape = deriveLaunchShape(command);
   const entry: McpServerEntry = {
-    name: sanitizeConfigString(name), source, client, command, args, env,
-    launchShape: deriveLaunchShape(command),
+    name: sanitizeConfigString(name), source, client, command, args, env, launchShape,
   };
   if (typeof raw.url === "string") entry.url = sanitizeConfigString(raw.url);
-  const pkg = parseNpmPackageRef(command, args);
-  if (pkg) entry.npmPackage = pkg;
+  if (launchShape === "npm") {
+    const pkg = parseNpmPackageRef(command, args);
+    if (pkg) entry.packageRef = { ecosystem: "npm", ...pkg };
+  } else if (launchShape === "pypi") {
+    const pkg = parsePypiPackageRef(command, args);
+    if (pkg) entry.packageRef = { ecosystem: "pypi", ...pkg };
+  }
   return entry;
 }
 

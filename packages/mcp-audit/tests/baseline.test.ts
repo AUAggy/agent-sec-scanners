@@ -28,7 +28,7 @@ const SNAPSHOT: McpConfigSnapshot = {
       args: ["-y", "notes-mcp@1.0.2"],
       env: { NOTES_API_KEY: "secret-value" },
       launchShape: "npm",
-      npmPackage: { spec: "notes-mcp@1.0.2", name: "notes-mcp", versionSpec: "1.0.2" },
+      packageRef: { ecosystem: "npm", spec: "notes-mcp@1.0.2", name: "notes-mcp", versionSpec: "1.0.2" },
     },
   ],
 };
@@ -85,7 +85,7 @@ describe("diffBaseline", () => {
       servers: [{
         ...SNAPSHOT.servers[0],
         args: ["-y", "notes-mcp@2.0.0"],
-        npmPackage: { spec: "notes-mcp@2.0.0", name: "notes-mcp", versionSpec: "2.0.0" },
+        packageRef: { ecosystem: "npm", spec: "notes-mcp@2.0.0", name: "notes-mcp", versionSpec: "2.0.0" },
       }],
     };
     const after = createBaseline(changedSnapshot, [
@@ -104,7 +104,7 @@ describe("diffBaseline", () => {
       sources: [],
       servers: [
         ...SNAPSHOT.servers,
-        { name: "extra", source: "/tmp/c.json", client: "claude-desktop", command: "npx", args: ["-y", "extra-mcp@1.0.0"], env: {}, launchShape: "npm", npmPackage: { spec: "extra-mcp@1.0.0", name: "extra-mcp", versionSpec: "1.0.0" } },
+        { name: "extra", source: "/tmp/c.json", client: "claude-desktop", command: "npx", args: ["-y", "extra-mcp@1.0.0"], env: {}, launchShape: "npm", packageRef: { ecosystem: "npm", spec: "extra-mcp@1.0.0", name: "extra-mcp", versionSpec: "1.0.0" } },
       ],
     };
     const after = createBaseline(grown, [manifest("notes", TOOLS)]);

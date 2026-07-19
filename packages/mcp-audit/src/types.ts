@@ -25,7 +25,8 @@ export type LaunchShape =
   | "local-binary"
   | "remote";
 
-/** An npm package reference parsed from a server's launch command. */
+/** A package spec parsed from a launch command, before the ecosystem is known.
+ * The parse functions return this shape; `toEntry` tags it with an ecosystem. */
 export interface NpmPackageRef {
   /** The raw spec as written, e.g. "@scope/server" or "server@1.2.3". */
   spec: string;
@@ -33,6 +34,13 @@ export interface NpmPackageRef {
   name: string;
   /** The pinned version, if any. Absent = floating (whatever the registry serves). */
   versionSpec?: string;
+}
+
+/** A package reference plus the registry ecosystem it resolves against. This is
+ * what the rules and registry adapters dispatch on, so a new ecosystem is a new
+ * adapter + one tag value, not a pipeline change. */
+export interface RegistryRef extends NpmPackageRef {
+  ecosystem: "npm" | "pypi";
 }
 
 /** One MCP server entry discovered in a client configuration file. */
@@ -49,8 +57,8 @@ export interface McpServerEntry {
   url?: string;
   /** How the server is launched. Always set by the collector. */
   launchShape: LaunchShape;
-  /** Set when the launch command resolves an npm package (npx/bunx). */
-  npmPackage?: NpmPackageRef;
+  /** Set when the launch command resolves a registry package (npm or PyPI). */
+  packageRef?: RegistryRef;
 }
 
 /** A config file the collectors looked at. */

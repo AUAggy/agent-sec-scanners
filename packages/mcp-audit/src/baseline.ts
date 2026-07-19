@@ -62,7 +62,7 @@ export function createBaseline(snapshot: McpConfigSnapshot, manifests: ToolManif
       client: server.client,
       name: server.name,
       source: server.source,
-      spec: server.npmPackage?.spec ?? server.url ?? [server.command, ...server.args].filter(Boolean).join(" "),
+      spec: server.packageRef?.spec ?? server.url ?? [server.command, ...server.args].filter(Boolean).join(" "),
       envKeys: Object.keys(server.env).sort(),
       manifest: m
         ? {

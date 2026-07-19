@@ -19,7 +19,7 @@ function server(overrides: Partial<McpServerEntry>): McpServerEntry {
     args: ["-y", "test-mcp@1.0.0"],
     env: {},
     launchShape: "npm",
-    npmPackage: { spec: "test-mcp@1.0.0", name: "test-mcp", versionSpec: "1.0.0" },
+    packageRef: { ecosystem: "npm", spec: "test-mcp@1.0.0", name: "test-mcp", versionSpec: "1.0.0" },
     ...overrides,
   };
 }
@@ -40,7 +40,7 @@ function registry(overrides: Partial<RegistryInfo>): RegistryInfo {
 describe("unpinned-server-version", () => {
   it("fires high on npx with no version pin", () => {
     const f = rule("unpinned-server-version").check({
-      server: server({ args: ["-y", "test-mcp"], npmPackage: { spec: "test-mcp", name: "test-mcp" } }),
+      server: server({ args: ["-y", "test-mcp"], packageRef: { ecosystem: "npm", spec: "test-mcp", name: "test-mcp" } }),
     });
     expect(f).not.toBeNull();
     expect(f!.severity).toBe("high");
@@ -51,10 +51,10 @@ describe("unpinned-server-version", () => {
 
   it("gives same-named servers in different sources distinct findingIds (no collision)", () => {
     const a = rule("unpinned-server-version").check({
-      server: server({ name: "aws-docs", source: "/home/x/.claude.json (project: /p/A)", args: ["-y", "d"], npmPackage: { spec: "d", name: "d" } }),
+      server: server({ name: "aws-docs", source: "/home/x/.claude.json (project: /p/A)", args: ["-y", "d"], packageRef: { ecosystem: "npm", spec: "d", name: "d" } }),
     });
     const b = rule("unpinned-server-version").check({
-      server: server({ name: "aws-docs", source: "/home/x/.claude.json (project: /p/B)", args: ["-y", "d"], npmPackage: { spec: "d", name: "d" } }),
+      server: server({ name: "aws-docs", source: "/home/x/.claude.json (project: /p/B)", args: ["-y", "d"], packageRef: { ecosystem: "npm", spec: "d", name: "d" } }),
     });
     expect(a!.findingId).not.toBe(b!.findingId);
   });
@@ -62,14 +62,14 @@ describe("unpinned-server-version", () => {
   it("is suppressed on an exact version pin, including prerelease", () => {
     expect(rule("unpinned-server-version").check({ server: server({}) })).toBeNull();
     expect(rule("unpinned-server-version").check({
-      server: server({ npmPackage: { spec: "test-mcp@2.0.0-rc.1", name: "test-mcp", versionSpec: "2.0.0-rc.1" } }),
+      server: server({ packageRef: { ecosystem: "npm", spec: "test-mcp@2.0.0-rc.1", name: "test-mcp", versionSpec: "2.0.0-rc.1" } }),
     })).toBeNull();
   });
 
   it("fires on floating specs: dist-tags and ranges", () => {
     for (const versionSpec of ["latest", "^1.0.0", "~1.2.0", "1.x"]) {
       const f = rule("unpinned-server-version").check({
-        server: server({ npmPackage: { spec: `test-mcp@${versionSpec}`, name: "test-mcp", versionSpec } }),
+        server: server({ packageRef: { ecosystem: "npm", spec: `test-mcp@${versionSpec}`, name: "test-mcp", versionSpec } }),
       });
       expect(f, versionSpec).not.toBeNull();
       expect(f!.details).toContain("floating");
@@ -78,7 +78,7 @@ describe("unpinned-server-version", () => {
 
   it("is suppressed on non-npm launch commands", () => {
     const f = rule("unpinned-server-version").check({
-      server: server({ command: "node", args: ["./local.js"], npmPackage: undefined }),
+      server: server({ command: "node", args: ["./local.js"], packageRef: undefined }),
     });
     expect(f).toBeNull();
   });
@@ -175,7 +175,7 @@ describe("evaluate() over a mixed set", () => {
       data: {
         server: server({
           args: ["-y", "risky-mcp"],
-          npmPackage: { spec: "risky-mcp", name: "risky-mcp" },
+          packageRef: { ecosystem: "npm", spec: "risky-mcp", name: "risky-mcp" },
           env: { TOKEN: "ghp_FAKEFAKEFAKEFAKEFAKE12345" },
         }),
         registry: registry({
