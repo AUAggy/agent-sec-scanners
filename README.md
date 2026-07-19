@@ -140,6 +140,8 @@ Full documentation: [`packages/bedrock`](packages/bedrock#readme).
 
 ## The engine
 
+![agent-sec-scanners architecture: mcp-audit and bedrock-security-mcp are thin packs on the shared @miaggy/core engine. Each reads its own source (MCP configs and the npm/PyPI registries, or an AWS Bedrock account) and both converge on one report format and one CI gate. Read-only, local and stateless, honest about blind spots.](docs/images/architecture.png)
+
 The reporting half of a security scanner (finding schema, severity, scoring,
 compliance mappings, report rendering) has nothing to do with what is being
 scanned. So it lives in [`@miaggy/core`](packages/core), and each scanner is a
