@@ -139,11 +139,17 @@ function toEntry(name: string, raw: RawServer, source: string, client: McpClient
  * Throws on unparseable content; the caller turns that into an unreadable
  * source finding. */
 export function parseConfigContent(content: string, path: string, client: McpClient): McpServerEntry[] {
-  const parsed = JSON.parse(client === "vscode" ? stripJsonComments(content) : content);
+  // VS Code and Zed settings.json permit comments (JSONC).
+  const allowsComments = client === "vscode" || client === "zed";
+  const parsed = JSON.parse(allowsComments ? stripJsonComments(content) : content);
   const entries: McpServerEntry[] = [];
 
+  // The server table under any of the shapes clients use: `mcpServers` (Claude,
+  // Cursor, Windsurf, Cline, Continue), `mcp.servers`/`servers` (VS Code),
+  // `mcp_servers`/`context_servers` (Zed). Best-effort for the newer clients:
+  // an unrecognized shape yields zero servers, never a crash.
   const table: Record<string, RawServer> | undefined =
-    parsed?.mcpServers ?? parsed?.mcp?.servers ?? parsed?.servers;
+    parsed?.mcpServers ?? parsed?.mcp?.servers ?? parsed?.servers ?? parsed?.mcp_servers ?? parsed?.context_servers;
   if (table && typeof table === "object") {
     for (const [name, raw] of Object.entries(table)) entries.push(toEntry(name, raw ?? {}, path, client));
   }

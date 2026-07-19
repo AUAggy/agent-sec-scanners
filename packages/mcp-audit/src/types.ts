@@ -4,7 +4,9 @@
 // types. Collectors produce them; rules are pure functions over them.
 
 /** The MCP clients whose configuration this pack discovers. */
-export type McpClient = "claude-desktop" | "claude-code" | "cursor" | "vscode" | "goose";
+export type McpClient =
+  | "claude-desktop" | "claude-code" | "cursor" | "vscode" | "goose"
+  | "windsurf" | "cline" | "continue" | "zed";
 
 /** How a configured server is launched, normalized. This is the dimension the
  * Wave-1 pipeline was implicitly keying on (it only ever handled npm): making

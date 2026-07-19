@@ -38,7 +38,7 @@ export function coverageResidual(server: McpServerEntry): string | null {
         ? `Launch shape 'pypi' (uvx/pipx): pinning and maintenance were assessed against PyPI, but PyPI does not publish install-script or provenance data, so those two supply-chain rules cannot run for this server. ${ran}`
         : `Launch shape 'pypi' (uvx/pipx): the launch command did not resolve to a PyPI package name, so the registry supply-chain rules did not run. ${ran}`;
     case "container":
-      return `Launch shape 'container' (docker/podman): image supply-chain assessment is not available in this version, so no pinning or provenance rule ran. ${ran}`;
+      return `Launch shape 'container' (docker/podman): container images are out of scope for this config-layer audit — assessing them needs per-registry authentication and image inspection, which is the job of a dedicated image scanner (Trivy, Grype, Docker Scout). ${ran}`;
     case "remote":
       return `This is a remote (url) server with no local package to assess, so the Wave-1 registry rules do not apply. The opt-in --manifests scan can inspect its live tools. ${ran}`;
     default:
