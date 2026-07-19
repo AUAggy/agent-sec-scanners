@@ -209,7 +209,7 @@ The full threat model is in [SECURITY.md](SECURITY.md).
 
 ## General Best Practices
 
-- **Pin a version in production.** `npx bedrock-security-mcp@0.1.0` rather than `@latest`, so a malicious or buggy publish cannot change your audit behavior.
+- **Pin a version in production.** `npx bedrock-security-mcp@0.2.0` rather than `@latest`, so a malicious or buggy publish cannot change your audit behavior.
 - **Run from CI on a schedule.** A daily `audit` job catches configuration drift (a new role, a weakened guardrail, a logging change) before an attacker does.
 - **Triage by severity.** Address critical findings within 24 hours, high within a week, medium during the next sprint. The posture score reflects that weighting.
 - **Re-run after remediation.** The audit is idempotent and stateless. Fix the issue, re-run, and the finding disappears. No baseline to manage.
