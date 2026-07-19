@@ -150,12 +150,12 @@ registers rules that are pure functions over it; the engine never touches the
 network or filesystem on a pack's behalf, which is why every pack's rule tests
 run without mocks.
 
-The engine was extracted from the Bedrock scanner under a contract: golden-file
-tests pinned the old scanner's output byte for byte before any code moved, and
-the rebuilt version had to reproduce it exactly. It did. So the second scanner,
-collectors and rules and fixtures and all, took days rather than months, and
-both scanners emit the same finding schema, the same 0-to-100 posture score, the
-same reports, and the same CI gate (exit 1 on any critical or high finding).
+Because all the reporting lives in one place, the two scanners behave the same
+way. Whichever you run, you get the same finding format, the same 0-to-100
+posture score, the same reports (markdown, HTML, and JSON), and the same CI gate:
+exit 1 on any critical or high finding. Learn to read one and you can read the
+other. Adding a new scanner is mostly writing its rules, since the reporting is
+already built and tested.
 
 Design decisions, each with its cost stated:
 
