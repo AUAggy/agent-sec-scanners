@@ -359,6 +359,31 @@
   }
   .passed-section .section-heading { border-bottom-color: #2E6E4E; }
 
+  /* --- Not assessed --------------------------------------------------------------- */
+  .na-intro {
+    font-size: 13px;
+    color: var(--ink-2);
+    padding: 12px 0 4px;
+    line-height: 1.7;
+  }
+  .na-item {
+    border-bottom: 1px solid var(--hairline);
+    padding: 11px 0;
+  }
+  .na-name {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12.5px;
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .na-why {
+    font-size: 13px;
+    color: var(--ink-2);
+    line-height: 1.6;
+    margin-top: 3px;
+  }
+  .na-section .section-heading { border-bottom-color: var(--ink-3); }
+
   /* --- Footer ------------------------------------------------------------------------ */
   .report-footer {
     border-top: 1px solid var(--ink);
@@ -409,7 +434,7 @@
   <div class="report-meta">
     <span>Machine <strong>workstation-01</strong></span>
     <span>Scope <strong>local</strong></span>
-    <span>Generated <strong>2026-07-18 13:09:13 UTC</strong></span>
+    <span>Generated <strong>2026-07-19 05:11:07 UTC</strong></span>
   </div>
   <p class="scope-line">Assessed against OWASP Top 10 for Agentic Applications, OWASP LLM Top 10 (2025), NIST AI RMF, MITRE ATLAS.</p>
 </header>
@@ -419,7 +444,7 @@
     <div>
       <div class="risk-rating" style="color: #B4560B;">Overall risk: High</div>
       <div class="health-score" style="color: #B4560B;">63<span class="denom">/100</span></div>
-      <div class="health-label">Posture score · 6 violation(s), 0 error(s)</div>
+      <div class="health-label">Posture score · 6 violation(s), 0 error(s), 3 not assessed</div>
     </div>
     <div class="figures">
       <div class="figure">
@@ -432,7 +457,7 @@
         <div class="figure-value" style="color: #8A6A05;">2</div>
         <div class="figure-label">Medium</div>
       </div><div class="figure">
-        <div class="figure-value" style="color: #4A5B6E;">1</div>
+        <div class="figure-value" style="color: #4A5B6E;">4</div>
         <div class="figure-label">Low</div>
       </div><div class="figure">
         <div class="figure-value" style="color: #B9BDC2;">0</div>
@@ -441,9 +466,9 @@
     </div>
   </div>
   <div class="severity-bar">
-      <div style="flex: 3; background: #B4560B;" title="High: 3"></div><div style="flex: 2; background: #8A6A05;" title="Medium: 2"></div><div style="flex: 1; background: #4A5B6E;" title="Low: 1"></div>
+      <div style="flex: 3; background: #B4560B;" title="High: 3"></div><div style="flex: 2; background: #8A6A05;" title="Medium: 2"></div><div style="flex: 4; background: #4A5B6E;" title="Low: 4"></div>
     </div>
-  <div class="bar-legend"><span style="color: #9BA0A6;">0 critical</span><span class="legend-sep">·</span><span style="color: #B4560B;">3 high</span><span class="legend-sep">·</span><span style="color: #8A6A05;">2 medium</span><span class="legend-sep">·</span><span style="color: #4A5B6E;">1 low</span></div>
+  <div class="bar-legend"><span style="color: #9BA0A6;">0 critical</span><span class="legend-sep">·</span><span style="color: #B4560B;">3 high</span><span class="legend-sep">·</span><span style="color: #8A6A05;">2 medium</span><span class="legend-sep">·</span><span style="color: #4A5B6E;">4 low</span></div>
 </section>
 
 <main>
@@ -454,7 +479,7 @@
       <button class="finding-header" aria-expanded="false" aria-controls="finding-high-0">
         <div class="finding-title-row">
           <span class="severity-label" style="color: #B4560B;">HIGH</span>
-          <span class="finding-title">Server &#039;example-tools-mcp&#039; runs example-tools-mcp without an exact version pin</span>
+          <span class="finding-title">Server &#039;dev-tools-mcp&#039; runs dev-tools-mcp without an exact version pin</span>
         </div>
         <div class="finding-meta">
           <span class="rule-id">unpinned-server-version</span>
@@ -464,11 +489,11 @@
       <div class="finding-body" id="finding-high-0">
         <div class="finding-detail">
           <div class="detail-label">Resource</div>
-          <div class="detail-value mono">claude-desktop:example-tools-mcp (/Users/example/Library/Application Support/Claude/claude_desktop_config.json)</div>
+          <div class="detail-value mono">claude-desktop:dev-tools-mcp (/Users/dev/Library/Application Support/Claude/claude_desktop_config.json)</div>
         </div>
         <div class="finding-detail">
           <div class="detail-label">Details</div>
-          <div class="detail-value">npx -y example-tools-mcp resolves &#039;example-tools-mcp&#039; at launch time. Whatever version the npm registry serves is executed without review.</div>
+          <div class="detail-value">npx -y dev-tools-mcp resolves &#039;dev-tools-mcp&#039; at launch time. Whatever version the npm registry serves is executed without review.</div>
         </div>
         <div class="finding-detail">
             <div class="detail-label">Threat</div>
@@ -480,7 +505,7 @@
           </div>
         <div class="finding-detail">
           <div class="detail-label">Remediation</div>
-          <div class="detail-value"><pre>Pin the package in the config: change &#039;example-tools-mcp&#039; to &#039;example-tools-mcp@&lt;version&gt;&#039; and bump deliberately after reviewing release notes.</pre></div>
+          <div class="detail-value"><pre>Pin the package in the config: change &#039;dev-tools-mcp&#039; to &#039;dev-tools-mcp@&lt;version&gt;&#039; and bump deliberately after reviewing release notes.</pre></div>
         </div>
         <div class="finding-detail">
           <div class="detail-label">Compliance</div>
@@ -492,44 +517,6 @@
       <button class="finding-header" aria-expanded="false" aria-controls="finding-high-1">
         <div class="finding-title-row">
           <span class="severity-label" style="color: #B4560B;">HIGH</span>
-          <span class="finding-title">Server &#039;notes-mcp&#039; runs notes-mcp without an exact version pin</span>
-        </div>
-        <div class="finding-meta">
-          <span class="rule-id">unpinned-server-version</span>
-          <span class="chevron" aria-hidden="true">▸</span>
-        </div>
-      </button>
-      <div class="finding-body" id="finding-high-1">
-        <div class="finding-detail">
-          <div class="detail-label">Resource</div>
-          <div class="detail-value mono">claude-desktop:notes-mcp (/Users/example/Library/Application Support/Claude/claude_desktop_config.json)</div>
-        </div>
-        <div class="finding-detail">
-          <div class="detail-label">Details</div>
-          <div class="detail-value">npx -y notes-mcp resolves &#039;notes-mcp&#039; at launch time. Whatever version the npm registry serves is executed without review.</div>
-        </div>
-        <div class="finding-detail">
-            <div class="detail-label">Threat</div>
-            <div class="detail-value">A hijacked maintainer account or a malicious patch release becomes arbitrary code execution inside the agent host on the next client start, with no action by the user.</div>
-          </div>
-          <div class="finding-detail">
-            <div class="detail-label">Why this matters</div>
-            <div class="detail-value">Pinning turns a silent auto-upgrade channel into an explicit review point. This is the same guidance this project ships for its own install instructions.</div>
-          </div>
-        <div class="finding-detail">
-          <div class="detail-label">Remediation</div>
-          <div class="detail-value"><pre>Pin the package in the config: change &#039;notes-mcp&#039; to &#039;notes-mcp@&lt;version&gt;&#039; and bump deliberately after reviewing release notes.</pre></div>
-        </div>
-        <div class="finding-detail">
-          <div class="detail-label">Compliance</div>
-          <div class="detail-value"><span class="tag">OWASP Agentic ASI04 · Supply Chain</span><span class="tag">OWASP Agentic ASI05 · Unexpected Code Execution</span><span class="tag">MITRE ATLAS</span></div>
-        </div>
-        
-      </div>
-    </div><div class="finding" style="border-left-color: #B4560B;">
-      <button class="finding-header" aria-expanded="false" aria-controls="finding-high-2">
-        <div class="finding-title-row">
-          <span class="severity-label" style="color: #B4560B;">HIGH</span>
           <span class="finding-title">Server &#039;notes-mcp&#039; has inline credential(s) in its env block</span>
         </div>
         <div class="finding-meta">
@@ -537,10 +524,10 @@
           <span class="chevron" aria-hidden="true">▸</span>
         </div>
       </button>
-      <div class="finding-body" id="finding-high-2">
+      <div class="finding-body" id="finding-high-1">
         <div class="finding-detail">
           <div class="detail-label">Resource</div>
-          <div class="detail-value mono">claude-desktop:notes-mcp (/Users/example/Library/Application Support/Claude/claude_desktop_config.json)</div>
+          <div class="detail-value mono">claude-desktop:notes-mcp (/Users/dev/Library/Application Support/Claude/claude_desktop_config.json)</div>
         </div>
         <div class="finding-detail">
           <div class="detail-label">Details</div>
@@ -564,6 +551,44 @@
         </div>
         
       </div>
+    </div><div class="finding" style="border-left-color: #B4560B;">
+      <button class="finding-header" aria-expanded="false" aria-controls="finding-high-2">
+        <div class="finding-title-row">
+          <span class="severity-label" style="color: #B4560B;">HIGH</span>
+          <span class="finding-title">Server &#039;docs-search&#039; runs docs-search-mcp without an exact version pin</span>
+        </div>
+        <div class="finding-meta">
+          <span class="rule-id">unpinned-server-version</span>
+          <span class="chevron" aria-hidden="true">▸</span>
+        </div>
+      </button>
+      <div class="finding-body" id="finding-high-2">
+        <div class="finding-detail">
+          <div class="detail-label">Resource</div>
+          <div class="detail-value mono">claude-code:docs-search (/Users/dev/.claude.json (project: /Users/dev/work/api))</div>
+        </div>
+        <div class="finding-detail">
+          <div class="detail-label">Details</div>
+          <div class="detail-value">uvx docs-search-mcp@latest resolves &#039;docs-search-mcp@latest&#039; at launch time. &#039;latest&#039; is a floating spec, so whatever version PyPI serves is executed without review.</div>
+        </div>
+        <div class="finding-detail">
+            <div class="detail-label">Threat</div>
+            <div class="detail-value">A hijacked maintainer account or a malicious patch release becomes arbitrary code execution inside the agent host on the next client start, with no action by the user.</div>
+          </div>
+          <div class="finding-detail">
+            <div class="detail-label">Why this matters</div>
+            <div class="detail-value">Pinning turns a silent auto-upgrade channel into an explicit review point. This is the same guidance this project ships for its own install instructions.</div>
+          </div>
+        <div class="finding-detail">
+          <div class="detail-label">Remediation</div>
+          <div class="detail-value"><pre>Pin the package in the config: change &#039;docs-search-mcp@latest&#039; to &#039;docs-search-mcp@&lt;version&gt;&#039; and bump deliberately after reviewing release notes.</pre></div>
+        </div>
+        <div class="finding-detail">
+          <div class="detail-label">Compliance</div>
+          <div class="detail-value"><span class="tag">OWASP Agentic ASI04 · Supply Chain</span><span class="tag">OWASP Agentic ASI05 · Unexpected Code Execution</span><span class="tag">MITRE ATLAS</span></div>
+        </div>
+        
+      </div>
     </div>
     </section>
   <section class="findings-section">
@@ -572,7 +597,7 @@
       <button class="finding-header" aria-expanded="false" aria-controls="finding-medium-3">
         <div class="finding-title-row">
           <span class="severity-label" style="color: #8A6A05;">MEDIUM</span>
-          <span class="finding-title">Package example-tools-mcp publishes without provenance</span>
+          <span class="finding-title">Package dev-tools-mcp publishes without provenance</span>
         </div>
         <div class="finding-meta">
           <span class="rule-id">server-no-provenance</span>
@@ -582,11 +607,11 @@
       <div class="finding-body" id="finding-medium-3">
         <div class="finding-detail">
           <div class="detail-label">Resource</div>
-          <div class="detail-value mono">claude-desktop:example-tools-mcp (/Users/example/Library/Application Support/Claude/claude_desktop_config.json)</div>
+          <div class="detail-value mono">claude-desktop:dev-tools-mcp (/Users/dev/Library/Application Support/Claude/claude_desktop_config.json)</div>
         </div>
         <div class="finding-detail">
           <div class="detail-label">Details</div>
-          <div class="detail-value">example-tools-mcp@0.3.1 has no provenance attestation on the npm registry.</div>
+          <div class="detail-value">dev-tools-mcp@0.3.1 has no provenance attestation on the npm registry.</div>
         </div>
         <div class="finding-detail">
             <div class="detail-label">Threat</div>
@@ -610,7 +635,7 @@
       <button class="finding-header" aria-expanded="false" aria-controls="finding-medium-4">
         <div class="finding-title-row">
           <span class="severity-label" style="color: #8A6A05;">MEDIUM</span>
-          <span class="finding-title">Package example-tools-mcp runs install scripts</span>
+          <span class="finding-title">Package dev-tools-mcp runs install scripts</span>
         </div>
         <div class="finding-meta">
           <span class="rule-id">server-install-scripts</span>
@@ -620,11 +645,11 @@
       <div class="finding-body" id="finding-medium-4">
         <div class="finding-detail">
           <div class="detail-label">Resource</div>
-          <div class="detail-value mono">claude-desktop:example-tools-mcp (/Users/example/Library/Application Support/Claude/claude_desktop_config.json)</div>
+          <div class="detail-value mono">claude-desktop:dev-tools-mcp (/Users/dev/Library/Application Support/Claude/claude_desktop_config.json)</div>
         </div>
         <div class="finding-detail">
           <div class="detail-label">Details</div>
-          <div class="detail-value">example-tools-mcp@0.3.1 declares one or more of preinstall/install/postinstall, which execute on the host at install time.</div>
+          <div class="detail-value">dev-tools-mcp@0.3.1 declares one or more of preinstall/install/postinstall, which execute on the host at install time.</div>
         </div>
         <div class="finding-detail">
             <div class="detail-label">Threat</div>
@@ -652,7 +677,7 @@
       <button class="finding-header" aria-expanded="false" aria-controls="finding-low-5">
         <div class="finding-title-row">
           <span class="severity-label" style="color: #4A5B6E;">LOW</span>
-          <span class="finding-title">Package example-tools-mcp is single-maintainer and stale</span>
+          <span class="finding-title">Package dev-tools-mcp is single-maintainer and stale</span>
         </div>
         <div class="finding-meta">
           <span class="rule-id">server-low-maintenance-signal</span>
@@ -662,11 +687,11 @@
       <div class="finding-body" id="finding-low-5">
         <div class="finding-detail">
           <div class="detail-label">Resource</div>
-          <div class="detail-value mono">claude-desktop:example-tools-mcp (/Users/example/Library/Application Support/Claude/claude_desktop_config.json)</div>
+          <div class="detail-value mono">claude-desktop:dev-tools-mcp (/Users/dev/Library/Application Support/Claude/claude_desktop_config.json)</div>
         </div>
         <div class="finding-detail">
           <div class="detail-label">Details</div>
-          <div class="detail-value">example-tools-mcp has 1 maintainer and its last publish was 2024-09-02 (over 540 days ago).</div>
+          <div class="detail-value">dev-tools-mcp has 1 maintainer and its last publish was 2024-08-02 (over 540 days ago).</div>
         </div>
         <div class="finding-detail">
             <div class="detail-label">Threat</div>
@@ -702,32 +727,32 @@
         <tbody><tr>
         <td><span class="severity-label" style="color: #B4560B;">HIGH</span></td>
         <td class="mono">unpinned-server-version</td>
-        <td>Server &#039;example-tools-mcp&#039; runs example-tools-mcp without an exact version pin</td>
+        <td>Server &#039;dev-tools-mcp&#039; runs dev-tools-mcp without an exact version pin</td>
         <td class="nowrap">Within 3 days</td>
       </tr><tr>
         <td><span class="severity-label" style="color: #8A6A05;">MEDIUM</span></td>
         <td class="mono">server-no-provenance</td>
-        <td>Package example-tools-mcp publishes without provenance</td>
+        <td>Package dev-tools-mcp publishes without provenance</td>
         <td class="nowrap">Within 2 weeks</td>
       </tr><tr>
         <td><span class="severity-label" style="color: #8A6A05;">MEDIUM</span></td>
         <td class="mono">server-install-scripts</td>
-        <td>Package example-tools-mcp runs install scripts</td>
+        <td>Package dev-tools-mcp runs install scripts</td>
         <td class="nowrap">Within 2 weeks</td>
       </tr><tr>
         <td><span class="severity-label" style="color: #4A5B6E;">LOW</span></td>
         <td class="mono">server-low-maintenance-signal</td>
-        <td>Package example-tools-mcp is single-maintainer and stale</td>
+        <td>Package dev-tools-mcp is single-maintainer and stale</td>
         <td class="nowrap">Next sprint</td>
-      </tr><tr>
-        <td><span class="severity-label" style="color: #B4560B;">HIGH</span></td>
-        <td class="mono">unpinned-server-version</td>
-        <td>Server &#039;notes-mcp&#039; runs notes-mcp without an exact version pin</td>
-        <td class="nowrap">Within 3 days</td>
       </tr><tr>
         <td><span class="severity-label" style="color: #B4560B;">HIGH</span></td>
         <td class="mono">secrets-in-env-block</td>
         <td>Server &#039;notes-mcp&#039; has inline credential(s) in its env block</td>
+        <td class="nowrap">Within 3 days</td>
+      </tr><tr>
+        <td><span class="severity-label" style="color: #B4560B;">HIGH</span></td>
+        <td class="mono">unpinned-server-version</td>
+        <td>Server &#039;docs-search&#039; runs docs-search-mcp without an exact version pin</td>
         <td class="nowrap">Within 3 days</td>
       </tr></tbody>
       </table>
@@ -739,11 +764,25 @@
         <tbody><tr><td class="framework-cell">MITRE ATLAS</td><td><code>unpinned-server-version</code>, <code>server-no-provenance</code>, <code>server-install-scripts</code></td></tr><tr><td class="framework-cell">NIST AI RMF 1.0</td><td><code>server-no-provenance</code>, <code>server-low-maintenance-signal</code>, <code>secrets-in-env-block</code></td></tr><tr><td class="framework-cell">OWASP Agentic ASI03 · Identity &amp; Privilege Abuse</td><td><code>secrets-in-env-block</code></td></tr><tr><td class="framework-cell">OWASP Agentic ASI04 · Supply Chain</td><td><code>unpinned-server-version</code>, <code>server-no-provenance</code>, <code>server-install-scripts</code>, <code>server-low-maintenance-signal</code></td></tr><tr><td class="framework-cell">OWASP Agentic ASI05 · Unexpected Code Execution</td><td><code>unpinned-server-version</code>, <code>server-install-scripts</code></td></tr><tr><td class="framework-cell">OWASP LLM02 · Sensitive Information Disclosure</td><td><code>secrets-in-env-block</code></td></tr></tbody>
       </table>
     </section>
+  <section class="na-section">
+      <h2 class="section-heading">Not assessed (3)</h2>
+      <p class="na-intro">Discovered but not fully checked. Each is named with the reason, so an empty findings list never means a server was skipped silently.</p>
+      <div class="na-item">
+        <span class="na-name">claude-code:docs-search (/Users/dev/.claude.json (project: /Users/dev/work/api))</span>
+        <p class="na-why">Launch shape &#039;pypi&#039; (uvx/pipx): pinning and maintenance were assessed against PyPI, but PyPI does not publish install-script or provenance data, so those two supply-chain rules cannot run for this server. The inline-secrets check ran against its env block.</p>
+      </div><div class="na-item">
+        <span class="na-name">cursor:remote-api (/Users/dev/.cursor/mcp.json)</span>
+        <p class="na-why">This is a remote (url) server with no local package to assess, so the Wave-1 registry rules do not apply. The opt-in --manifests scan can inspect its live tools. The inline-secrets check ran against its env block.</p>
+      </div><div class="na-item">
+        <span class="na-name">vscode:image-tools (/Users/dev/.vscode/mcp.json)</span>
+        <p class="na-why">Launch shape &#039;container&#039; (docker/podman): container images are out of scope for this config-layer audit — assessing them needs per-registry authentication and image inspection, which is the job of a dedicated image scanner (Trivy, Grype, Docker Scout). The inline-secrets check ran against its env block.</p>
+      </div>
+    </section>
   
 </main>
 
 <footer class="report-footer">
-  <span>Generated by @miaggy/mcp-audit v0.1.0</span>
+  <span>Generated by @miaggy/mcp-audit v0.3.0</span>
   <span>OWASP Top 10 for Agentic Applications, OWASP LLM Top 10 (2025), NIST AI RMF, MITRE ATLAS</span>
 </footer>
 

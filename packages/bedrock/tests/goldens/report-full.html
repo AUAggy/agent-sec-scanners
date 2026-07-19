@@ -359,6 +359,31 @@
   }
   .passed-section .section-heading { border-bottom-color: #2E6E4E; }
 
+  /* --- Not assessed --------------------------------------------------------------- */
+  .na-intro {
+    font-size: 13px;
+    color: var(--ink-2);
+    padding: 12px 0 4px;
+    line-height: 1.7;
+  }
+  .na-item {
+    border-bottom: 1px solid var(--hairline);
+    padding: 11px 0;
+  }
+  .na-name {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12.5px;
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .na-why {
+    font-size: 13px;
+    color: var(--ink-2);
+    line-height: 1.6;
+    margin-top: 3px;
+  }
+  .na-section .section-heading { border-bottom-color: var(--ink-3); }
+
   /* --- Footer ------------------------------------------------------------------------ */
   .report-footer {
     border-top: 1px solid var(--ink);
@@ -788,6 +813,7 @@
         <tbody><tr><td class="framework-cell">NIST AI RMF 1.0</td><td><code>wildcard-bedrock-action</code>, <code>wildcard-principal</code>, <code>no-condition-keys</code>, <code>bedrock-logging-disabled</code>, <code>guardrail-no-pii-filter</code>, <code>prompt-injection-ignore-previous-instructions</code>, <code>excessive-token-usage</code></td></tr><tr><td class="framework-cell">OWASP LLM06 · Excessive Agency</td><td><code>wildcard-bedrock-action</code>, <code>wildcard-principal</code>, <code>no-condition-keys</code>, <code>bedrock-logging-disabled</code>, <code>guardrail-no-pii-filter</code>, <code>prompt-injection-ignore-previous-instructions</code>, <code>excessive-token-usage</code></td></tr></tbody>
       </table>
     </section>
+  
   <section class="passed-section">
       <h2 class="section-heading">Passed checks (1)</h2>
       <p class="passed-summary">No prompt injection signals detected.</p>
