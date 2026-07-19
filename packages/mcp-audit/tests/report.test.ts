@@ -13,7 +13,7 @@ const server: McpServerEntry = {
   args: ["-y", "risky-mcp"],
   env: { API_KEY: "sk-FAKEFAKEFAKEFAKEFAKE1234" },
   launchShape: "npm",
-  npmPackage: { spec: "risky-mcp", name: "risky-mcp" },
+  packageRef: { ecosystem: "npm", spec: "risky-mcp", name: "risky-mcp" },
 };
 
 const registry: RegistryInfo = {

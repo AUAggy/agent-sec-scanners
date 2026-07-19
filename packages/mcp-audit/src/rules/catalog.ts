@@ -43,8 +43,8 @@ const TOOL_FINDING_METADATA: RuleCatalogEntry[] = [
   },
   {
     ruleId: "registry-lookup-skipped",
-    title: "npm registry lookup skipped",
-    description: "Registry facts for a package could not be fetched (offline or registry error); provenance, install-script, and maintenance rules did not run for it.",
+    title: "Package registry lookup skipped",
+    description: "Registry facts for a package could not be fetched from npm or PyPI (offline or registry error); provenance, install-script, and maintenance rules did not run for it.",
     threat: "Missing registry data silently disables three rules; a clean report would overstate what was checked.",
     rationale: "Surfacing the skipped lookup keeps the report honest about coverage instead of implying the registry-backed checks passed.",
     severity: "low",
