@@ -191,11 +191,6 @@ spawned over real stdio in the integration suite to prove every manifest rule
 fires. Report output is pinned by golden-file tests, so a scanner's reports
 cannot drift under refactoring.
 
-## Layout and releases
-
-npm workspaces. A GitHub release tagged `core-vX.Y.Z`, `bedrock-vX.Y.Z`, or
-`mcp-audit-vX.Y.Z` publishes that workspace; prerelease tags publish under the
-npm dist-tag `next`, so `latest` moves only on a final release. Publish `core`
-before a pack that depends on a new core version.
+## License
 
 MIT.
