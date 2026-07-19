@@ -1,5 +1,10 @@
 node_modules/
 dist/
 plan/
+# planning docs stay private (kept in plan/), never in the published repo
+/TODO-*.md
+# scan output artifacts from local runs
+/mcp-audit-*.html
+packages/*/mcp-audit-*.html
 *.log
 .DS_Store
